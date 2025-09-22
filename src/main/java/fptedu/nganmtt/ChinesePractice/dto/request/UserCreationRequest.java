@@ -1,11 +1,11 @@
 package fptedu.nganmtt.ChinesePractice.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -20,6 +20,10 @@ public class UserCreationRequest {
     String password;
     String firstName;
     String lastName;
+
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    LocalDate birthDate;
+
     String email;
     String role;
 }

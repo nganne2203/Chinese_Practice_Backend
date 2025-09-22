@@ -1,17 +1,33 @@
 package fptedu.nganmtt.ChinesePractice.service;
 
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import fptedu.nganmtt.ChinesePractice.dto.request.AuthenticationRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.IntrospectRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
+import fptedu.nganmtt.ChinesePractice.dto.response.AuthenticationResponse;
+import fptedu.nganmtt.ChinesePractice.dto.response.IntrospectResponse;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
+import fptedu.nganmtt.ChinesePractice.mapper.UserMapper;
 import fptedu.nganmtt.ChinesePractice.model.User;
 import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -19,12 +35,88 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
     UserRepository userRepository;
+    UserMapper userMapper;
 
-    public boolean authenticate(AuthenticationRequest authenticationRequest) {
+    @NonFinal
+    @Value("${jwt.signer.key}")
+    protected String SIGNER_KEY;
+
+    public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
         var user = userRepository.findByUserName(authenticationRequest.getUserName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        return passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
+        boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
+
+        if (!authenticated) {
+            throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+
+        var token = generateToken(authenticationRequest.getUserName());
+
+        return AuthenticationResponse.builder()
+                .token(token).authenticated(true).build();
+
+    }
+
+    public IntrospectResponse introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException {
+        var token = introspectRequest.getToken();
+
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date experityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        return IntrospectResponse.builder()
+                .valid(verified && experityTime.after(new Date()))
+                .build();
+    }
+
+    public AuthenticationResponse register(UserCreationRequest request) {
+        if (userRepository.findByUserName(request.getUserName()).isPresent()) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        User user = userMapper.toUser(request);
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        userRepository.save(user);
+
+        var token = generateToken(request.getUserName());
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    private String generateToken(String username) {
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(username)
+                .issuer(username)
+                .issueTime(new Date())
+                .expirationTime(new Date(
+                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                ))
+                .claim("customClaim", "custom")
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
+
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
