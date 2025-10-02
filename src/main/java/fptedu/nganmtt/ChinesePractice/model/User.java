@@ -1,5 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.model;
 
+import fptedu.nganmtt.ChinesePractice.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,12 +10,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -51,11 +54,5 @@ public class User {
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    Role role;
-
-    public enum Role {
-        LEARNER,
-        ADMIN
-    }
+    Set<String> roles;
 }

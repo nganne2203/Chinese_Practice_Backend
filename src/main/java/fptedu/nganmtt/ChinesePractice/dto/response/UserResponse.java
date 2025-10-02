@@ -1,10 +1,12 @@
 package fptedu.nganmtt.ChinesePractice.dto.response;
 
+import fptedu.nganmtt.ChinesePractice.model.User;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Builder
@@ -14,12 +16,11 @@ import java.time.LocalDateTime;
 public class UserResponse {
     String id;
     String userName;
-    String password;
     String firstName;
     String lastName;
     LocalDate birthDate;
     String email;
-    String role;
+    Set<String> roles;
     LocalDateTime createAt;
     LocalDateTime updateAt;
 }
