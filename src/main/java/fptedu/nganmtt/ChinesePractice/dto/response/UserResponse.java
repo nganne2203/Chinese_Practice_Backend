@@ -1,6 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.dto.response;
 
-import fptedu.nganmtt.ChinesePractice.model.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -21,6 +21,9 @@ public class UserResponse {
     LocalDate birthDate;
     String email;
     Set<String> roles;
-    LocalDateTime createAt;
-    LocalDateTime updateAt;
+
+    @JsonFormat(pattern = "HH:mm:ss, dd/MM/yyyy")
+    LocalDateTime createdAt;
+    @JsonFormat(pattern = "HH:mm:ss, dd/MM/yyyy")
+    LocalDateTime updatedAt;
 }

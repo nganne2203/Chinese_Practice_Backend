@@ -4,14 +4,12 @@ import fptedu.nganmtt.ChinesePractice.dto.request.ApiResponse;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserUpdateRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.UserResponse;
-import fptedu.nganmtt.ChinesePractice.model.User;
 import fptedu.nganmtt.ChinesePractice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,37 +24,43 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest newUser) {
-        ApiResponse<User> response = new ApiResponse<>();
-        response.setResult(userService.createUser(newUser));
-        return response;
+    ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest newUser) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.createUser(newUser))
+                .build();
     }
 
     @GetMapping
     ApiResponse<List<UserResponse>> getAllUsers() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        log.info("User: " + authentication.getName() + " Role: " + authentication.getAuthorities().toString());
-
         return ApiResponse.<List<UserResponse>>builder()
                 .result(userService.getUsers())
                 .build();
     }
 
     @GetMapping("/{userId}")
-    UserResponse getUser(@PathVariable UUID userId) {
-        return userService.getUserById(userId);
+    ApiResponse<UserResponse> getUser(@PathVariable UUID userId) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getUserById(userId))
+                .build();
     }
 
     @PutMapping("/{userId}")
-    UserResponse updateUser(@PathVariable UUID userId, @RequestBody UserUpdateRequest user) {
-        return userService.updateUser(userId, user);
+    ApiResponse<UserResponse> updateUser(@PathVariable UUID userId, @RequestBody UserUpdateRequest user) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updateUser(userId, user))
+                .build();
     }
 
     @DeleteMapping("/{userId}")
     String deleteUser(@PathVariable UUID userId) {
         userService.deleteUser(userId);
-        return "success";
+        return ApiResponse.<String>builder().result("User deleted").build().toString();
     }
 
+    @GetMapping("/my-info")
+    ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
 }
