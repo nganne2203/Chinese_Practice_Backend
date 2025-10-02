@@ -1,6 +1,5 @@
 package fptedu.nganmtt.ChinesePractice.model;
 
-import fptedu.nganmtt.ChinesePractice.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
