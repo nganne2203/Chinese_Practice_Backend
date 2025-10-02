@@ -12,8 +12,14 @@ import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.el.stream.Optional;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,12 +28,13 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
-    public User createUser(UserCreationRequest user) {
+    public UserResponse createUser(UserCreationRequest user) {
         if(userRepository.existsByUserName(user.getUserName()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
@@ -38,14 +45,18 @@ public class UserService {
         roles.add(Role.LEARNER.name());
         newUser.setRoles(roles);
 
-        return userRepository.save(newUser);
+        return userMapper.toUserResponse(newUser);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
+        log.info("In method get Users");
         return userRepository.findAll().stream()
                 .map(userMapper::toUserResponse).toList();
     }
 
+    //only who logged in can get their info
+    @PostAuthorize("returnObject.userName == authentication.name")
     public UserResponse getUserById(UUID id) {
         return userMapper.toUserResponse(
                 userRepository.findById(id)
@@ -65,5 +76,13 @@ public class UserService {
 
     public void deleteUser(UUID id) {
         userRepository.deleteById(id);
+    }
+
+    public UserResponse getMyInfo(){
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        User byUserName = userRepository.findByUserName(name)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(byUserName);
     }
 }
