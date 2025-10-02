@@ -1,6 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.exception;
 
-import fptedu.nganmtt.ChinesePractice.dto.request.ApiResponse;
+import fptedu.nganmtt.ChinesePractice.dto.request.ApiResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -9,26 +9,26 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
-        ApiResponse apiResponse = new ApiResponse();
+    ResponseEntity<ApiResult> handlingRuntimeException(RuntimeException exception) {
+        ApiResult apiResult = new ApiResult();
 
-        apiResponse.setCode(1001);
-        apiResponse.setMessage(exception.getMessage());
+        apiResult.setCode(1001);
+        apiResult.setMessage(exception.getMessage());
 
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.badRequest().body(apiResult);
     }
 
     @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingAppException(AppException exception) {
+    ResponseEntity<ApiResult> handlingAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
-        return ResponseEntity.badRequest().body(apiResponse);
+        ApiResult apiResult = new ApiResult();
+        apiResult.setCode(errorCode.getCode());
+        apiResult.setMessage(errorCode.getMessage());
+        return ResponseEntity.badRequest().body(apiResult);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+    ResponseEntity<ApiResult> handlingMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         String enumKey = exception.getBindingResult().getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.KEY_INVALID;
         try {
@@ -36,19 +36,19 @@ public class GlobalExceptionHandler {
         } catch (IllegalArgumentException e) {
 
         }
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
+        ApiResult apiResult = new ApiResult();
+        apiResult.setCode(errorCode.getCode());
+        apiResult.setMessage(errorCode.getMessage());
 
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.badRequest().body(apiResult);
     }
 
     @ExceptionHandler(value = Exception.class)
-    ResponseEntity<ApiResponse> handlingException(Exception exception) {
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
-        apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
-        return ResponseEntity.badRequest().body(apiResponse);
+    ResponseEntity<ApiResult> handlingException(Exception exception) {
+        ApiResult apiResult = new ApiResult();
+        apiResult.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
+        apiResult.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
+        return ResponseEntity.badRequest().body(apiResult);
     }
 
 }
