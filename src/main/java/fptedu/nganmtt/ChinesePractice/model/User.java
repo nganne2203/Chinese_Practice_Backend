@@ -53,5 +53,6 @@ public class User {
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
-    Set<String> roles;
+    @ManyToMany
+    Set<Role> roles;
 }
