@@ -3,11 +3,11 @@ package fptedu.nganmtt.ChinesePractice.service;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserUpdateRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.UserResponse;
-import fptedu.nganmtt.ChinesePractice.enums.Role;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
 import fptedu.nganmtt.ChinesePractice.mapper.UserMapper;
 import fptedu.nganmtt.ChinesePractice.model.User;
+import fptedu.nganmtt.ChinesePractice.repository.RoleRepository;
 import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +31,7 @@ public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
     public UserResponse createUser(UserCreationRequest user) {
         if(userRepository.existsByUserName(user.getUserName()))
@@ -46,7 +47,9 @@ public class UserService {
         return userMapper.toUserResponse(newUser);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // has role only for role
+    // permission need to use hasAuthority
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('APPROVED_POST')")
     public List<UserResponse> getUsers() {
         log.info("In method get Users");
         return userRepository.findAll().stream()
@@ -68,6 +71,11 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         userMapper.updateUser(updateUser, user);
+
+        updateUser.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        var roles = roleRepository.findAllById(user.getRoles());
+        updateUser.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserResponse(userRepository.save(updateUser));
     }

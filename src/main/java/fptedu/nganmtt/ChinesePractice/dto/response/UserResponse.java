@@ -39,7 +39,7 @@ public class UserResponse {
     @Schema(description = "Email address of the user", example = "abc@gmail.com")
     String email;
 
-    Set<Role> roles;
+    Set<RoleResponse> roles;
 
     @JsonFormat(pattern = "HH:mm:ss, dd/MM/yyyy")
     LocalDateTime createdAt;
