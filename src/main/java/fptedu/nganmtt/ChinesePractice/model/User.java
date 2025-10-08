@@ -9,12 +9,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
 @Getter
 @Setter
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,34 +29,25 @@ public class User {
     @Column(length = 50, unique = true, nullable = false)
     String userName;
 
-    @Column(length = 255, nullable = false)
+    @Column(nullable = false)
     String password;
 
-    @Column(length = 255)
     String firstName;
 
-    @Column(length = 255)
     String lastName;
 
-    @Column(name = "dob")
     LocalDate birthDate;
 
     @Column(length = 100)
     String email;
 
     @CreatedDate
-    @Column(name = "created_at",  updatable = false)
+    @Column(updatable = false)
     LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    Role role;
-
-    public enum Role {
-        LEARNER,
-        ADMIN
-    }
+    @ManyToMany
+    Set<Role> roles;
 }

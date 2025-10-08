@@ -7,39 +7,57 @@ import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
 import fptedu.nganmtt.ChinesePractice.mapper.UserMapper;
 import fptedu.nganmtt.ChinesePractice.model.User;
+import fptedu.nganmtt.ChinesePractice.repository.RoleRepository;
 import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
-    public User createUser(UserCreationRequest user) {
+    public UserResponse createUser(UserCreationRequest user) {
         if(userRepository.existsByUserName(user.getUserName()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
         User newUser = userMapper.toUser(user);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        return userRepository.save(newUser);
+        HashSet<String> roles = new HashSet<>();
+//        roles.add(Role.LEARNER.name());
+//        newUser.setRoles(roles);
+
+        return userMapper.toUserResponse(newUser);
     }
 
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    // has role only for role
+    // permission need to use hasAuthority
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('APPROVED_POST')")
+    public List<UserResponse> getUsers() {
+        log.info("In method get Users");
+        return userRepository.findAll().stream()
+                .map(userMapper::toUserResponse).toList();
     }
 
+    //only who logged in can get their info
+    @PostAuthorize("returnObject.userName == authentication.name")
     public UserResponse getUserById(UUID id) {
         return userMapper.toUserResponse(
                 userRepository.findById(id)
@@ -54,10 +72,23 @@ public class UserService {
 
         userMapper.updateUser(updateUser, user);
 
+        updateUser.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        var roles = roleRepository.findAllById(user.getRoles());
+        updateUser.setRoles(new HashSet<>(roles));
+
         return userMapper.toUserResponse(userRepository.save(updateUser));
     }
 
     public void deleteUser(UUID id) {
         userRepository.deleteById(id);
+    }
+
+    public UserResponse getMyInfo(){
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        User byUserName = userRepository.findByUserName(name)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(byUserName);
     }
 }
