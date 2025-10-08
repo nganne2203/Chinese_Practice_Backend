@@ -1,6 +1,7 @@
 package fptedu.nganmtt.ChinesePractice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import fptedu.nganmtt.ChinesePractice.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -38,7 +39,7 @@ public class UserResponse {
     @Schema(description = "Email address of the user", example = "abc@gmail.com")
     String email;
 
-    Set<String> roles;
+    Set<RoleResponse> roles;
 
     @JsonFormat(pattern = "HH:mm:ss, dd/MM/yyyy")
     LocalDateTime createdAt;

@@ -67,12 +67,12 @@ public class AuthenticationService {
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date experityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
 
         return IntrospectResponse.builder()
-                .valid(verified && experityTime.after(new Date()))
+                .valid(verified && expirationTime.after(new Date()))
                 .build();
     }
 
@@ -124,7 +124,13 @@ public class AuthenticationService {
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
         if(!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(stringJoiner::add);
+            user.getRoles().forEach(role -> {
+                stringJoiner.add("ROLE_" + role.getName());
+                if (!CollectionUtils.isEmpty(role.getPermissions()))
+                    role.getPermissions()
+                            .forEach(permission ->
+                                    stringJoiner.add(permission.getName()));
+            });
         }
         return stringJoiner.toString();
     }

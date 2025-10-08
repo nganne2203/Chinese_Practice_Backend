@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
 @Getter
 @Setter
 @Builder
@@ -30,28 +29,25 @@ public class User {
     @Column(length = 50, unique = true, nullable = false)
     String userName;
 
-    @Column(length = 255, nullable = false)
+    @Column(nullable = false)
     String password;
 
-    @Column(length = 255)
     String firstName;
 
-    @Column(length = 255)
     String lastName;
 
-    @Column(name = "dob")
     LocalDate birthDate;
 
     @Column(length = 100)
     String email;
 
     @CreatedDate
-    @Column(name = "created_at",  updatable = false)
+    @Column(updatable = false)
     LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
-    Set<String> roles;
+    @ManyToMany
+    Set<Role> roles;
 }

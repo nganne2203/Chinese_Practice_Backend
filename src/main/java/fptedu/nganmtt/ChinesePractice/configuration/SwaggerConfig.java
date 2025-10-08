@@ -22,7 +22,7 @@ public class SwaggerConfig {
                             .url("https://www.nganmtt.com"))
                     .license(new License()
                             .name("Apache 2.0")
-                            .url("http://www.apache.org/licenses/LICENSE-2.0.html")))
+                            .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
                 .externalDocs(new ExternalDocumentation()
                         .description("GitHub Repository")
                         .url("https://github.com/nganne2203/Chinese_Practice_Backend"));
