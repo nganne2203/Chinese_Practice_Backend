@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -43,9 +44,10 @@ public class UserService {
         User newUser = userMapper.toUser(user);
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        HashSet<String> roles = new HashSet<>();
-//        roles.add(Role.LEARNER.name());
-//        newUser.setRoles(roles);
+        newUser.setRoles(Set.of(
+                roleRepository.findById("USER")
+                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND))
+        ));
 
         return userMapper.toUserResponse(userRepository.save(newUser));
     }
