@@ -5,10 +5,8 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import fptedu.nganmtt.ChinesePractice.dto.request.AuthenticationRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.IntrospectRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.LogoutRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
+import fptedu.nganmtt.ChinesePractice.configuration.JwtProperties;
+import fptedu.nganmtt.ChinesePractice.dto.request.*;
 import fptedu.nganmtt.ChinesePractice.dto.response.AuthenticationResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.IntrospectResponse;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
@@ -22,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +34,7 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -42,6 +42,7 @@ public class AuthenticationService {
     UserRepository userRepository;
     UserMapper userMapper;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    JwtProperties jwtProperties;
 
     @NonFinal
     @Value("${jwt.signer.key}")
@@ -70,7 +71,7 @@ public class AuthenticationService {
 
         boolean isValid = true;
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         } catch (Exception e) {
             isValid = false;
         }
@@ -101,11 +102,29 @@ public class AuthenticationService {
     }
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
-        var signToken = verifyToken(request.getToken());
+        try {
+            var signToken = verifyToken(request.getToken(), true);
 
-        String jwt = signToken.getJWTClaimsSet().getJWTID();
+            String jwt = signToken.getJWTClaimsSet().getJWTID();
 
-        Date expirationTime = signToken.getJWTClaimsSet().getExpirationTime();
+            Date expirationTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jwt)
+                    .expiryDate(expirationTime)
+                    .build();
+
+            invalidatedTokenRepository.save(invalidatedToken);
+        } catch (AppException e) {
+            log.info("Token invalidated");
+        }
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signJWT = verifyToken(request.getToken(), true);
+
+        var jwt = signJWT.getJWTClaimsSet().getJWTID();
+        var expirationTime = signJWT.getJWTClaimsSet().getExpirationTime();
 
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                 .id(jwt)
@@ -113,14 +132,26 @@ public class AuthenticationService {
                 .build();
 
         invalidatedTokenRepository.save(invalidatedToken);
+
+        var userName = signJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        var token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 
-    private SignedJWT verifyToken(String token) throws ParseException, JOSEException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationTime = (isRefresh) ?
+                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(jwtProperties.getRefreshableDuration(), ChronoUnit.SECONDS).toEpochMilli())
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
 
@@ -142,7 +173,7 @@ public class AuthenticationService {
                 .issuer("nganne")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now().plus(jwtProperties.getValidDuration(), ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
