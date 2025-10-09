@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import java.util.UUID;
 
 @Entity
-@Table(name = "HSKLevel")
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)

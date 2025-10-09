@@ -7,9 +7,9 @@ import lombok.experimental.FieldDefaults;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Vocabulary")
 @Getter
 @Setter
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor

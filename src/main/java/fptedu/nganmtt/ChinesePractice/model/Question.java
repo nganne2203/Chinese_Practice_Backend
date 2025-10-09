@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Question")
+@Builder
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)

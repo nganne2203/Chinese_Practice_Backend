@@ -1,10 +1,7 @@
 package fptedu.nganmtt.ChinesePractice.controller;
 
 import com.nimbusds.jose.JOSEException;
-import fptedu.nganmtt.ChinesePractice.dto.request.ApiResult;
-import fptedu.nganmtt.ChinesePractice.dto.request.AuthenticationRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.IntrospectRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.*;
 import fptedu.nganmtt.ChinesePractice.dto.response.AuthenticationResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.IntrospectResponse;
 import fptedu.nganmtt.ChinesePractice.service.AuthenticationService;
@@ -44,5 +41,13 @@ public class AuthenticationController {
         return ApiResult.<IntrospectResponse>builder()
                 .result(result)
                 .build();
+    }
+
+    @PostMapping("/logout")
+    ApiResult<Void> logout(@RequestBody LogoutRequest logoutRequest) throws ParseException, JOSEException {
+        authenticationService.logout(logoutRequest);
+        return ApiResult.<Void>builder()
+                .build();
+
     }
 }

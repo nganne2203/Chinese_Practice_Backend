@@ -7,12 +7,12 @@ import lombok.experimental.FieldDefaults;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Lesson")
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Lesson {
 
     @Id
