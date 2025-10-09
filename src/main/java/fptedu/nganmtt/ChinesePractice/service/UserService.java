@@ -52,7 +52,7 @@ public class UserService {
 
     // has role only for role
     // permission need to use hasAuthority
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('APPROVED_POST')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         log.info("In method get Users");
         return userRepository.findAll().stream()
