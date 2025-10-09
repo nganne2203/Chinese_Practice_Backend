@@ -19,9 +19,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINT = {"/api/users",
+    private final String[] PUBLIC_ENDPOINT = {
+            "/api/users",
             "/api/auth/login",
             "/api/auth/introspect",
+            "/api/auth/refresh",
             "/api/auth/logout",
             "/swagger-ui.html",
             "/swagger-ui/**",
