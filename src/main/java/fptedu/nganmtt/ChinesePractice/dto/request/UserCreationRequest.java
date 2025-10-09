@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -31,5 +32,4 @@ public class UserCreationRequest {
     @NotBlank
     @Email(message = "INVALID_EMAIL")
     String email;
-    String role;
 }
