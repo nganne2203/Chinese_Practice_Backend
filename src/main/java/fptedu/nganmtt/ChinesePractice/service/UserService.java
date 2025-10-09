@@ -37,6 +37,9 @@ public class UserService {
         if(userRepository.existsByUserName(user.getUserName()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
+        if (userRepository.existsByEmail(user.getEmail()))
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+
         User newUser = userMapper.toUser(user);
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -44,7 +47,7 @@ public class UserService {
 //        roles.add(Role.LEARNER.name());
 //        newUser.setRoles(roles);
 
-        return userMapper.toUserResponse(newUser);
+        return userMapper.toUserResponse(userRepository.save(newUser));
     }
 
     // has role only for role
