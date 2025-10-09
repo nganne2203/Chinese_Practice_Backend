@@ -8,8 +8,8 @@ import java.util.UUID;
 import java.util.List;
 
 @Entity
-@Table(name = "Unit")
 @Getter
+@Builder
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor

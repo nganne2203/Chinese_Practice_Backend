@@ -7,13 +7,16 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import fptedu.nganmtt.ChinesePractice.dto.request.AuthenticationRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.IntrospectRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.LogoutRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.AuthenticationResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.IntrospectResponse;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
 import fptedu.nganmtt.ChinesePractice.mapper.UserMapper;
+import fptedu.nganmtt.ChinesePractice.model.InvalidatedToken;
 import fptedu.nganmtt.ChinesePractice.model.User;
+import fptedu.nganmtt.ChinesePractice.repository.InvalidatedTokenRepository;
 import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ import java.util.StringJoiner;
 public class AuthenticationService {
     UserRepository userRepository;
     UserMapper userMapper;
+    InvalidatedTokenRepository invalidatedTokenRepository;
 
     @NonFinal
     @Value("${jwt.signer.key}")
@@ -63,16 +68,15 @@ public class AuthenticationService {
     public IntrospectResponse introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException {
         var token = introspectRequest.getToken();
 
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verified = signedJWT.verify(verifier);
+        boolean isValid = true;
+        try {
+            verifyToken(token);
+        } catch (Exception e) {
+            isValid = false;
+        }
 
         return IntrospectResponse.builder()
-                .valid(verified && expirationTime.after(new Date()))
+                .valid(isValid)
                 .build();
     }
 
@@ -96,6 +100,40 @@ public class AuthenticationService {
                 .build();
     }
 
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signToken = verifyToken(request.getToken());
+
+        String jwt = signToken.getJWTClaimsSet().getJWTID();
+
+        Date expirationTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jwt)
+                .expiryDate(expirationTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    private SignedJWT verifyToken(String token) throws ParseException, JOSEException {
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        if (!(verified && expirationTime.after(new Date())))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (invalidatedTokenRepository.existsById(signedJWT
+                .getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        return signedJWT;
+    }
+
     private String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
@@ -106,6 +144,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
 
