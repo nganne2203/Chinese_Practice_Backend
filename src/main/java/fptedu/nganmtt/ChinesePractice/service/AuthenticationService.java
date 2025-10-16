@@ -65,7 +65,16 @@ public class AuthenticationService {
 
         boolean isValid = true;
         try {
-            verifyToken(token, false);
+            var signedJWT = jwtService.verifySignedJwt(token);
+            var claims = signedJWT.getJWTClaimsSet();
+            
+            if (!claims.getExpirationTime().after(new Date())) {
+                isValid = false;
+            }
+            
+            if (invalidatedTokenRepository.existsById(claims.getJWTID())) {
+                isValid = false;
+            }
         } catch (Exception e) {
             isValid = false;
         }
@@ -99,11 +108,11 @@ public class AuthenticationService {
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
         try {
-            var signToken = verifyToken(request.getToken(), true);
+            var signedJWT = jwtService.verifySignedJwt(request.getToken());
+            var claims = signedJWT.getJWTClaimsSet();
 
-            String jwt = signToken.getJWTClaimsSet().getJWTID();
-
-            Date expirationTime = signToken.getJWTClaimsSet().getExpirationTime();
+            String jwt = claims.getJWTID();
+            Date expirationTime = claims.getExpirationTime();
 
             InvalidatedToken invalidatedToken = InvalidatedToken.builder()
                     .id(jwt)
@@ -112,7 +121,7 @@ public class AuthenticationService {
 
             invalidatedTokenRepository.save(invalidatedToken);
         } catch (AppException e) {
-            log.info("Token invalidated");
+            log.info("Token already invalidated or invalid");
         }
     }
 
