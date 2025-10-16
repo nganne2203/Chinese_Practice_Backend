@@ -10,6 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
-    private long validDuration; // in milliseconds
-    private long refreshableDuration; // in milliseconds
+    private long validDuration;
+    private long refreshableDuration;
 }

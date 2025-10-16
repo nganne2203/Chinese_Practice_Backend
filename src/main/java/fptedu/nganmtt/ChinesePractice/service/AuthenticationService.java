@@ -1,9 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.service;
 
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import fptedu.nganmtt.ChinesePractice.configuration.JwtProperties;
 import fptedu.nganmtt.ChinesePractice.dto.request.*;
@@ -19,20 +16,16 @@ import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
-import java.util.UUID;
+
 
 @Slf4j
 @Service
@@ -43,10 +36,7 @@ public class AuthenticationService {
     UserMapper userMapper;
     InvalidatedTokenRepository invalidatedTokenRepository;
     JwtProperties jwtProperties;
-
-    @NonFinal
-    @Value("${jwt.signer.key}")
-    protected String SIGNER_KEY;
+    JwtService jwtService;
 
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
         var user = userRepository.findByUserName(authenticationRequest.getUserName())
@@ -59,10 +49,14 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
-        var token = generateToken(user);
+    var accessToken = jwtService.generateAccessToken(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
 
-        return AuthenticationResponse.builder()
-                .token(token).authenticated(true).build();
+    return AuthenticationResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .authenticated(true)
+        .build();
 
     }
 
@@ -93,12 +87,14 @@ public class AuthenticationService {
 
         userRepository.save(user);
 
-        var token = generateToken(user);
+    var accessToken = jwtService.generateAccessToken(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
 
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+    return AuthenticationResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .authenticated(true)
+        .build();
     }
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
@@ -121,87 +117,53 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signJWT = verifyToken(request.getToken(), true);
+    var signedJWT = jwtService.verifySignedJwt(request.getToken());
 
-        var jwt = signJWT.getJWTClaimsSet().getJWTID();
-        var expirationTime = signJWT.getJWTClaimsSet().getExpirationTime();
+    var claims = signedJWT.getJWTClaimsSet();
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jwt)
-                .expiryDate(expirationTime)
-                .build();
+    var type = claims.getStringClaim("type");
+    if (!"refresh".equals(type)) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        invalidatedTokenRepository.save(invalidatedToken);
+    var jwt = claims.getJWTID();
+    var expirationTime = claims.getExpirationTime();
 
-        var userName = signJWT.getJWTClaimsSet().getSubject();
-        var user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+        .id(jwt)
+        .expiryDate(expirationTime)
+        .build();
 
-        var token = generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+    invalidatedTokenRepository.save(invalidatedToken);
+
+    var userName = claims.getSubject();
+    var user = userRepository.findByUserName(userName)
+        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    var accessToken = jwtService.generateAccessToken(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
+
+    return AuthenticationResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .authenticated(true)
+        .build();
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+        SignedJWT signedJWT = jwtService.verifySignedJwt(token);
 
-        SignedJWT signedJWT = SignedJWT.parse(token);
+        var claims = signedJWT.getJWTClaimsSet();
 
-        Date expirationTime = (isRefresh) ?
-                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(jwtProperties.getRefreshableDuration(), ChronoUnit.SECONDS).toEpochMilli())
-                : signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verified = signedJWT.verify(verifier);
-
-        if (!(verified && expirationTime.after(new Date())))
+        if (invalidatedTokenRepository.existsById(claims.getJWTID()))
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        if (invalidatedTokenRepository.existsById(signedJWT
-                .getJWTClaimsSet().getJWTID()))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        var now = new Date();
+        if (!claims.getExpirationTime().after(now)) throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (isRefresh) {
+            var type = claims.getStringClaim("type");
+            if (!"refresh".equals(type)) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
         return signedJWT;
-    }
-
-    private String generateToken(User user) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUserName())
-                .issuer("nganne")
-                .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(jwtProperties.getValidDuration(), ChronoUnit.SECONDS).toEpochMilli()
-                ))
-                .jwtID(UUID.randomUUID().toString())
-                .claim("scope", buildScope(user))
-                .build();
-
-        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header, payload);
-
-        try {
-            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
-            return jwsObject.serialize();
-        } catch (JOSEException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private String buildScope(User user) {
-        StringJoiner stringJoiner = new StringJoiner(" ");
-        if(!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> {
-                stringJoiner.add("ROLE_" + role.getName());
-                if (!CollectionUtils.isEmpty(role.getPermissions()))
-                    role.getPermissions()
-                            .forEach(permission ->
-                                    stringJoiner.add(permission.getName()));
-            });
-        }
-        return stringJoiner.toString();
     }
 }

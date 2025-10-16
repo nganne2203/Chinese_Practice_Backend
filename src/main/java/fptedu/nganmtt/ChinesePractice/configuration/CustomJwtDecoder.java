@@ -1,8 +1,8 @@
 package fptedu.nganmtt.ChinesePractice.configuration;
 
 import com.nimbusds.jose.JOSEException;
-import fptedu.nganmtt.ChinesePractice.dto.request.IntrospectRequest;
-import fptedu.nganmtt.ChinesePractice.service.AuthenticationService;
+import com.nimbusds.jwt.SignedJWT;
+import fptedu.nganmtt.ChinesePractice.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -22,7 +22,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     private String signerKey;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private JwtService jwtService;
 
     private NimbusJwtDecoder jwtDecoder = null;
 
@@ -30,12 +30,9 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            var response = authenticationService.introspect(IntrospectRequest.builder()
-                            .token(token)
-                    .build());
-
-            if (!response.isValid()) 
-                throw new JwtException("Invalid token");
+            SignedJWT signedJWT = jwtService.verifySignedJwt(token);
+            var type = signedJWT.getJWTClaimsSet().getStringClaim("type");
+            if (!"access".equals(type)) throw new JwtException("Invalid token type");
         } catch (JOSEException | ParseException e ) {
             throw new JwtException("Invalid JWT token: " + e.getMessage(), e);
         }
