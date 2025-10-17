@@ -4,7 +4,10 @@ import com.nimbusds.jose.JOSEException;
 import fptedu.nganmtt.ChinesePractice.dto.request.*;
 import fptedu.nganmtt.ChinesePractice.dto.response.AuthenticationResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.IntrospectResponse;
+import fptedu.nganmtt.ChinesePractice.dto.response.RefreshTokenResponse;
+import fptedu.nganmtt.ChinesePractice.dto.response.UserResponse;
 import fptedu.nganmtt.ChinesePractice.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,15 +31,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    ApiResult<AuthenticationResponse> register(@RequestBody UserCreationRequest userCreationRequest){
+    ApiResult<UserResponse> register(@Valid @RequestBody UserCreationRequest userCreationRequest){
         var result = authenticationService.register(userCreationRequest);
-        return ApiResult.<AuthenticationResponse>builder()
+        return ApiResult.<UserResponse>builder()
                 .result(result)
                 .build();
     }
 
     @PostMapping("/introspect")
-    ApiResult<IntrospectResponse> login(@RequestBody IntrospectRequest introspectRequest) throws ParseException, JOSEException {
+    ApiResult<IntrospectResponse> introspect(@Valid @RequestBody IntrospectRequest introspectRequest) throws ParseException, JOSEException {
         var result = authenticationService.introspect(introspectRequest);
         return ApiResult.<IntrospectResponse>builder()
                 .result(result)
@@ -44,7 +47,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    ApiResult<Void> logout(@RequestBody LogoutRequest logoutRequest) throws ParseException, JOSEException {
+    ApiResult<Void> logout(@Valid @RequestBody LogoutRequest logoutRequest) throws ParseException, JOSEException {
         authenticationService.logout(logoutRequest);
         return ApiResult.<Void>builder()
                 .build();
@@ -52,10 +55,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    ApiResult<AuthenticationResponse> refresh(@RequestBody RefreshRequest refreshRequest)
+    ApiResult<RefreshTokenResponse> refresh(@Valid @RequestBody RefreshRequest refreshRequest)
             throws ParseException, JOSEException {
         var result = authenticationService.refreshToken(refreshRequest);
-        return ApiResult.<AuthenticationResponse>builder()
+        return ApiResult.<RefreshTokenResponse>builder()
                 .result(result)
                 .build();
     }

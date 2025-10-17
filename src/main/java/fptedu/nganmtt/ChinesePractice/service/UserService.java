@@ -77,8 +77,6 @@ public class UserService {
 
         userMapper.updateUser(updateUser, user);
 
-        updateUser.setPassword(passwordEncoder.encode(user.getPassword()));
-
         var roles = roleRepository.findAllById(user.getRoles());
         updateUser.setRoles(new HashSet<>(roles));
 
