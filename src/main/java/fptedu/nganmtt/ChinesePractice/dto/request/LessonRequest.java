@@ -9,10 +9,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UnitUpdateRequest {
+public class LessonRequest {
     @NotBlank(message = "FIELD_REQUIRED")
     String title;
+    String description;
     @NotBlank(message = "FIELD_REQUIRED")
-    int unitNumber;
-    String level;
+    String unitId;
 }

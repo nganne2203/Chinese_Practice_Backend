@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
 import java.util.UUID;
-import java.util.List;
 
 @Entity
 @Getter
@@ -32,6 +32,6 @@ public class Unit {
     String title;
 
     @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Lesson> lessons;
+    Set<Lesson> lessons;
 }
 
