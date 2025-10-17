@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -21,4 +22,7 @@ public class HSKLevel {
 
     @Column(length = 20, nullable = false)
     String name;
+
+    @OneToMany
+    Set<Unit> units;
 }
