@@ -41,12 +41,10 @@ public class CustomJwtDecoder implements JwtDecoder {
             var type = claims.getStringClaim("type");
             if (!"access".equals(type)) throw new JwtException("Invalid token type");
             
-            // Check if token is not expired
             if (!claims.getExpirationTime().after(new Date())) {
                 throw new JwtException("Token expired");
             }
             
-            // Check if token has been invalidated (logout)
             if (invalidatedTokenRepository.existsById(claims.getJWTID())) {
                 throw new JwtException("Token has been invalidated");
             }

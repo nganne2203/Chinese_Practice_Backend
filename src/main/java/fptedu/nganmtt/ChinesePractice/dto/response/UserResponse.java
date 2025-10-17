@@ -1,7 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import fptedu.nganmtt.ChinesePractice.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
