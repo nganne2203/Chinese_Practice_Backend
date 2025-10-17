@@ -1,0 +1,14 @@
+package fptedu.nganmtt.ChinesePractice.dto.request;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class UnitUpdateRequest {
+    String title;
+    int unitNumber;
+}

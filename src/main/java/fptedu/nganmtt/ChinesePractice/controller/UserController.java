@@ -1,8 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.controller;
 
-import fptedu.nganmtt.ChinesePractice.dto.request.ApiResult;
-import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.UserUpdateRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.*;
 import fptedu.nganmtt.ChinesePractice.dto.response.UserResponse;
 import fptedu.nganmtt.ChinesePractice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,9 +56,25 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    ApiResult<UserResponse> updateUser(@PathVariable UUID userId, @RequestBody @Valid UserUpdateRequest user) {
-        return ApiResult.<UserResponse>builder()
-                .result(userService.updateUser(userId, user))
+    ApiResult<Void> updateUser(@PathVariable UUID userId, @RequestBody @Valid UserUpdateRequest user) {
+        return ApiResult.<Void>builder()
+                .message("Profile updated successfully")
+                .build();
+    }
+
+    @PostMapping("/role-update/{userId}")
+    ApiResult<Void> updateUserRole(@PathVariable UUID userId, @RequestBody UserUpdateRoleRequest request) {
+        userService.updateRoleUser(userId, request);
+        return ApiResult.<Void>builder()
+                .message("User role updated successfully")
+                .build();
+    }
+
+    @PostMapping("/change-password/{userId}")
+    ApiResult<Void> changePassword(@PathVariable UUID userId, @RequestBody @Valid ChangePasswordRequest request) {
+        userService.changePassword(userId, request);
+        return ApiResult.<Void>builder()
+                .message("Password changed successfully")
                 .build();
     }
 

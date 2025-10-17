@@ -1,7 +1,9 @@
 package fptedu.nganmtt.ChinesePractice.service;
 
+import fptedu.nganmtt.ChinesePractice.dto.request.ChangePasswordRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserCreationRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.UserUpdateRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.UserUpdateRoleRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.UserResponse;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
@@ -66,21 +68,40 @@ public class UserService {
     public UserResponse getUserById(UUID id) {
         return userMapper.toUserResponse(
                 userRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("User not found"))
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND))
         );
     }
 
 
-    public UserResponse updateUser(UUID id, UserUpdateRequest user) {
+    public void updateUser(UUID id, UserUpdateRequest user) {
         User updateUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         userMapper.updateUser(updateUser, user);
 
-        var roles = roleRepository.findAllById(user.getRoles());
-        updateUser.setRoles(new HashSet<>(roles));
+        userRepository.save(updateUser);
+    }
 
-        return userMapper.toUserResponse(userRepository.save(updateUser));
+    public void updateRoleUser(UUID id, UserUpdateRoleRequest request) {
+        User updateUser = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        var roles = roleRepository.findAllById(request.getRoles());
+        updateUser.setRoles(new HashSet<>(roles));
+        userRepository.save(updateUser);
+    }
+
+    public void changePassword(UUID id, ChangePasswordRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        boolean matches = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
+        if (!matches) {
+            throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     public void deleteUser(UUID id) {

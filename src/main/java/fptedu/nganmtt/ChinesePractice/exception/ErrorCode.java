@@ -20,7 +20,9 @@ public enum ErrorCode {
     PERMISSION_NOT_FOUND(1011, "Permission not found", HttpStatus.BAD_REQUEST),
     REFRESH_TOKEN_REQUIRED(1012, "Refresh token is required", HttpStatus.BAD_REQUEST),
     ACCESS_TOKEN_REQUIRED(1013, "Access token is required", HttpStatus.BAD_REQUEST),
-    FIELD_REQUIRED(1014, "Field is required", HttpStatus.BAD_REQUEST),
+    FIELD_REQUIRED(1014, "You are missing the required field", HttpStatus.BAD_REQUEST),
+    HSK_LEVEL_NOT_FOUND(2001, "HSK level not found", HttpStatus.BAD_REQUEST),
+    UNIT_NOT_FOUND(2002, "Unit not found", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {
