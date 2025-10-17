@@ -16,7 +16,11 @@ public enum ErrorCode {
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     INVALID_EMAIL(1008, "Invalid email address", HttpStatus.BAD_REQUEST),
     EMAIL_EXISTED(1009, "Email already exists", HttpStatus.BAD_REQUEST),
-    ROLE_NOT_FOUND(1010, "Role not found", HttpStatus.BAD_REQUEST)
+    ROLE_NOT_FOUND(1010, "Role not found", HttpStatus.BAD_REQUEST),
+    PERMISSION_NOT_FOUND(1011, "Permission not found", HttpStatus.BAD_REQUEST),
+    REFRESH_TOKEN_REQUIRED(1012, "Refresh token is required", HttpStatus.BAD_REQUEST),
+    ACCESS_TOKEN_REQUIRED(1013, "Access token is required", HttpStatus.BAD_REQUEST),
+    FIELD_REQUIRED(1014, "Field is required", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {

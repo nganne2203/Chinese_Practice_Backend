@@ -4,6 +4,7 @@ import fptedu.nganmtt.ChinesePractice.dto.request.ApiResult;
 import fptedu.nganmtt.ChinesePractice.dto.request.RoleRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.RoleResponse;
 import fptedu.nganmtt.ChinesePractice.service.RoleService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +22,7 @@ public class RoleController {
     RoleService roleService;
 
     @PostMapping
-    ApiResult<RoleResponse> create(@RequestBody RoleRequest roleRequest) {
+    ApiResult<RoleResponse> create(@Valid @RequestBody RoleRequest roleRequest) {
         return ApiResult.<RoleResponse>builder()
                 .result(roleService.create(roleRequest))
                 .build();
