@@ -23,6 +23,8 @@ public enum ErrorCode {
     FIELD_REQUIRED(1014, "You are missing the required field", HttpStatus.BAD_REQUEST),
     HSK_LEVEL_NOT_FOUND(2001, "HSK level not found", HttpStatus.BAD_REQUEST),
     UNIT_NOT_FOUND(2002, "Unit not found", HttpStatus.BAD_REQUEST),
+    LESSON_NOT_FOUND(2003, "Lesson not found", HttpStatus.BAD_REQUEST),
+    VOCABULARY_NOT_FOUND(2004, "Vocabulary not found", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {
