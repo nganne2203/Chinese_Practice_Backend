@@ -5,6 +5,7 @@ import fptedu.nganmtt.ChinesePractice.dto.request.UnitRequest;
 import fptedu.nganmtt.ChinesePractice.dto.request.UnitUpdateRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.UnitResponse;
 import fptedu.nganmtt.ChinesePractice.service.UnitService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,9 +20,11 @@ import java.util.List;
 public class UnitController {
     UnitService unitService;
 
-    @GetMapping("/by-level/{level}")
-    public ApiResult<List<UnitResponse>> getAllUnitsByHskLevel(@PathVariable String level) {
-        var units = unitService.getAllUnitsByHskLevel(java.util.UUID.fromString(level));
+    @GetMapping
+    public ApiResult<List<UnitResponse>> getAllUnitsByHskLevel(
+            @RequestParam(name = "level", required = false) String level) {
+
+        var units = unitService.getAllUnitsByHskLevel(level);
         return ApiResult.<List<UnitResponse>>builder()
                 .result(units)
                 .build();
@@ -36,7 +39,7 @@ public class UnitController {
     }
 
     @PostMapping()
-    public ApiResult<UnitResponse> createUnit(@RequestBody UnitRequest request) {
+    public ApiResult<UnitResponse> createUnit(@RequestBody @Valid UnitRequest request) {
         var result = unitService.createUnit(request);
         return ApiResult.<UnitResponse>builder()
                 .result(result)
@@ -44,7 +47,7 @@ public class UnitController {
     }
 
     @PutMapping("/{id}")
-    public ApiResult<Void> updateUnit(@PathVariable String id, @RequestBody UnitUpdateRequest request) {
+    public ApiResult<Void> updateUnit(@PathVariable String id, @RequestBody @Valid UnitUpdateRequest request) {
         unitService.updateUnit(java.util.UUID.fromString(id), request);
         return ApiResult.<Void>builder()
                 .message("Unit updated successfully")

@@ -26,37 +26,80 @@ public class UnitService {
     UnitsRepository unitsRepository;
     UnitMapper unitMapper;
     HskLevelRepository hskLevelRepository;
-    public List<UnitResponse> getAllUnitsByHskLevel(UUID levelId) {
-        return unitsRepository.findAllByLevel_Id(levelId)
-                .stream().map(unitMapper::toUnitResponse)
-                .toList();
+
+    public List<UnitResponse> getAllUnitsByHskLevel(String levelId) {
+        try {
+            if (levelId == null || levelId.isBlank()) {
+                return getAllUnits();
+            }
+
+            return unitsRepository.findAllByLevel_Id(java.util.UUID.fromString(levelId))
+                    .stream().map(unitMapper::toUnitResponse)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Error fetching units by HSK level {}: {}", levelId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public UnitResponse getUnitById(UUID id) {
-        return unitsRepository.findById(id)
-                .map(unitMapper::toUnitResponse)
-                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
+        try {
+            return unitsRepository.findById(id)
+                    .map(unitMapper::toUnitResponse)
+                    .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
+        } catch (Exception e) {
+            log.error("Error fetching unit by id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public UnitResponse createUnit(UnitRequest unitRequest) {
-        var unit = unitMapper.toUnit(unitRequest);
-        unit.setLevel(hskLevelRepository.findById(UUID.fromString(unitRequest.getLevelId()))
-                .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND)));
-        return unitMapper.toUnitResponse(unitsRepository.save(unit));
+        try {
+            var unit = unitMapper.toUnit(unitRequest);
+            unit.setLevel(hskLevelRepository.findById(UUID.fromString(unitRequest.getLevelId()))
+                    .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND)));
+            return unitMapper.toUnitResponse(unitsRepository.save(unit));
+        } catch (Exception e) {
+            log.error("Error creating unit: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public void updateUnit(UUID id, UnitUpdateRequest unitRequest) {
-        Unit existingUnit = unitsRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
-
-        unitMapper.updateUnit(existingUnit, unitRequest);
-        unitsRepository.save(existingUnit);
+        try {
+            Unit existingUnit = unitsRepository.findById(id)
+                    .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
+            existingUnit.setLevel(hskLevelRepository.findById(UUID.fromString(unitRequest.getLevel()))
+                    .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND)));
+            unitMapper.updateUnit(existingUnit, unitRequest);
+            unitsRepository.save(existingUnit);
+        } catch (Exception e) {
+            log.error("Error updating unit with id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public void deleteUnit(UUID id) {
-        Unit existingUnit = unitsRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
-        unitsRepository.delete(existingUnit);
+        try {
+            Unit existingUnit = unitsRepository.findById(id)
+                    .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
+            unitsRepository.delete(existingUnit);
+        } catch (Exception e) {
+            log.error("Error deleting unit with id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    public List<UnitResponse> getAllUnits() {
+        try {
+            return unitsRepository.findAll()
+                    .stream()
+                    .map(unitMapper::toUnitResponse)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Error fetching all units: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
 }
