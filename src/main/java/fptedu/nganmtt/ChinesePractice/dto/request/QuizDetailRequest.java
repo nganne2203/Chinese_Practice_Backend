@@ -1,18 +1,18 @@
 package fptedu.nganmtt.ChinesePractice.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.Set;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UnitUpdateRequest {
-    @NotBlank(message = "FIELD_REQUIRED")
+public class QuizDetailRequest {
     String title;
-    @NotBlank(message = "FIELD_REQUIRED")
-    int unitNumber;
-    String levelId;
+    String type;
+    String lessonId;
+    String createdById;
 }

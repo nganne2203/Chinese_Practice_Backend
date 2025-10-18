@@ -69,7 +69,7 @@ public class UnitService {
         try {
             Unit existingUnit = unitsRepository.findById(id)
                     .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
-            existingUnit.setLevel(hskLevelRepository.findById(UUID.fromString(unitRequest.getLevel()))
+            existingUnit.setLevel(hskLevelRepository.findById(UUID.fromString(unitRequest.getLevelId()))
                     .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND)));
             unitMapper.updateUnit(existingUnit, unitRequest);
             unitsRepository.save(existingUnit);

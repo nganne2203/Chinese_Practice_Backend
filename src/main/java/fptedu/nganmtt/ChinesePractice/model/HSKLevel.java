@@ -17,7 +17,7 @@ public class HSKLevel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     UUID id;
 
     @Column(length = 20, nullable = false)
