@@ -1,6 +1,7 @@
 package fptedu.nganmtt.ChinesePractice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 public class UnitRequest {
     @NotBlank(message = "FIELD_REQUIRED")
     String title;
-    @NotBlank(message = "FIELD_REQUIRED")
+    @NotNull(message = "FIELD_REQUIRED")
     int unitNumber;
     @NotBlank(message = "FIELD_REQUIRED")
     String levelId;
