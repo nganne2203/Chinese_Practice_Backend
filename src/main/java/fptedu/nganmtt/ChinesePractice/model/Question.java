@@ -17,22 +17,21 @@ public class Question {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quiz_id", nullable = false)
+    @JoinColumn(nullable = false)
     Quiz quiz;
 
     @Lob
-    @Column(name = "question_text", nullable = false)
+    @Column(nullable = false)
     String questionText;
 
-    @Column(name = "answer_correct", length = 255, nullable = false)
+    @Column(length = 255, nullable = false)
     String answer;
 
     @Lob
-    @Column(name = "options")
     String options;
 }
 

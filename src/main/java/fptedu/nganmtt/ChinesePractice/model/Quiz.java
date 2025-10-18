@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -17,15 +18,14 @@ public class Quiz {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_id")
     Lesson lesson;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
+    @JoinColumn(nullable = false)
     User createdBy;
 
     @Column(length = 100, nullable = false)
@@ -35,10 +35,26 @@ public class Quiz {
     @Column(length = 20, nullable = false)
     QuizType type;
 
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Set<Question> questions;
+
     public enum QuizType {
         MULTIPLE_CHOICE,
         MATCHING,
-        FILL_IN_BLANK
+        FILL_IN_BLANK;
+
+        public static QuizType fromString(String type) {
+            if (type == null) {
+                throw new IllegalArgumentException("Quiz type cannot be null");
+            }
+            return switch (type.trim().toUpperCase()) {
+                case "MULTIPLE_CHOICE" -> MULTIPLE_CHOICE;
+                case "MATCHING" -> MATCHING;
+                case "FILL_IN_BLANK" -> FILL_IN_BLANK;
+                default -> throw new IllegalArgumentException("Invalid quiz type: " + type);
+            };
+        }
     }
+
 }
 

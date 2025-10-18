@@ -20,7 +20,7 @@ public class Vocabulary {
     UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_id", nullable = false)
+    @JoinColumn(nullable = false)
     Lesson lesson;
 
     @Column(length = 50)
@@ -33,7 +33,6 @@ public class Vocabulary {
     String meaning;
 
     @Lob
-    @Column(name = "example_sentence")
     String exampleSentence;
 }
 
