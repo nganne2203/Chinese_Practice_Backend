@@ -1,5 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +10,11 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Schema(
+        description = "Request to refresh an access token",
+        title = "RefreshRequest",
+        requiredProperties = {"refreshToken"}
+)
 public class RefreshRequest {
     @NotBlank(message = "FIELD_REQUIRED")
     String refreshToken;

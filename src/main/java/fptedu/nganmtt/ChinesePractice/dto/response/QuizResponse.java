@@ -1,5 +1,6 @@
 package fptedu.nganmtt.ChinesePractice.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,6 +11,10 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Schema(
+        description = "Response containing quiz details along with associated questions",
+        title = "QuizResponse"
+)
 public class QuizResponse {
     String id;
     String title;

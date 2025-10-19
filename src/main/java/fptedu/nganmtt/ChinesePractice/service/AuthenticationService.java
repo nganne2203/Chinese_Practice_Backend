@@ -12,6 +12,7 @@ import fptedu.nganmtt.ChinesePractice.mapper.UserMapper;
 import fptedu.nganmtt.ChinesePractice.model.InvalidatedToken;
 import fptedu.nganmtt.ChinesePractice.model.User;
 import fptedu.nganmtt.ChinesePractice.repository.InvalidatedTokenRepository;
+import fptedu.nganmtt.ChinesePractice.repository.RoleRepository;
 import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -32,25 +34,31 @@ public class AuthenticationService {
     InvalidatedTokenRepository invalidatedTokenRepository;
     JwtService jwtService;
     PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
-        var user = userRepository.findByUserName(authenticationRequest.getUserName())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        try {
+            var user = userRepository.findByUserName(authenticationRequest.getUserName())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
+            boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
 
-        if (!authenticated) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+            if (!authenticated) {
+                throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+            }
+
+            var accessToken = jwtService.generateAccessToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
+
+            return AuthenticationResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .user(userMapper.toUserResponse(user))
+                    .build();
+        } catch (Exception e) {
+            log.info("In method authenticate", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-
-    var accessToken = jwtService.generateAccessToken(user);
-    var refreshToken = jwtService.generateRefreshToken(user);
-
-    return AuthenticationResponse.builder()
-        .accessToken(accessToken)
-        .refreshToken(refreshToken)
-        .user(userMapper.toUserResponse(user))
-        .build();
 
     }
 
@@ -77,17 +85,29 @@ public class AuthenticationService {
     }
 
     public UserResponse register(UserCreationRequest request) {
-        if (userRepository.findByUserName(request.getUserName()).isPresent()) {
-            throw new AppException(ErrorCode.USER_EXISTED);
+        try {
+            if (userRepository.findByUserName(request.getUserName()).isPresent()) {
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
+
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new AppException(ErrorCode.EMAIL_EXISTED);
+            }
+
+            User user = userMapper.toUser(request);
+
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setRoles(Set.of(
+                    roleRepository.findById("USER")
+                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND))
+            ));
+            userRepository.save(user);
+
+            return userMapper.toUserResponse(user);
+        } catch (Exception e) {
+            log.info("In method register", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-
-        User user = userMapper.toUser(request);
-
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        userRepository.save(user);
-
-        return userMapper.toUserResponse(user);
     }
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
@@ -130,40 +150,45 @@ public class AuthenticationService {
     }
 
     public RefreshTokenResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = jwtService.verifySignedJwt(request.getRefreshToken());
+        try {
+            var signedJWT = jwtService.verifySignedJwt(request.getRefreshToken());
 
-        var claims = signedJWT.getJWTClaimsSet();
+            var claims = signedJWT.getJWTClaimsSet();
 
-        var type = claims.getStringClaim("type");
-        if (!"refresh".equals(type)) throw new AppException(ErrorCode.UNAUTHENTICATED);
+            var type = claims.getStringClaim("type");
+            if (!"refresh".equals(type)) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        var jwt = claims.getJWTID();
-        var expirationTime = claims.getExpirationTime();
+            var jwt = claims.getJWTID();
+            var expirationTime = claims.getExpirationTime();
 
-        if (invalidatedTokenRepository.existsById(jwt))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            if (invalidatedTokenRepository.existsById(jwt))
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        if (!expirationTime.after(new Date()))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            if (!expirationTime.after(new Date()))
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-            .id(jwt)
-            .expiryDate(expirationTime)
-            .build();
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jwt)
+                    .expiryDate(expirationTime)
+                    .build();
 
-        invalidatedTokenRepository.save(invalidatedToken);
+            invalidatedTokenRepository.save(invalidatedToken);
 
-        var userName = claims.getSubject();
-        var user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            var userName = claims.getSubject();
+            var user = userRepository.findByUserName(userName)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+            var accessToken = jwtService.generateAccessToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
 
-        return RefreshTokenResponse.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .authenticated(true)
-            .build();
+            return RefreshTokenResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .authenticated(true)
+                    .build();
+        } catch (Exception e) {
+            log.info("In method refreshToken", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 }

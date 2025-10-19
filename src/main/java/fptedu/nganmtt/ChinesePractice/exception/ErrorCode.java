@@ -26,7 +26,9 @@ public enum ErrorCode {
     LESSON_NOT_FOUND(2003, "Lesson not found", HttpStatus.BAD_REQUEST),
     VOCABULARY_NOT_FOUND(2004, "Vocabulary not found", HttpStatus.BAD_REQUEST),
     QUIZ_NOT_FOUND(2005, "Quiz not found", HttpStatus.BAD_REQUEST),
-    QUESTION_NOT_FOUND(2006, "Question not found", HttpStatus.BAD_REQUEST)
+    QUESTION_NOT_FOUND(2006, "Question not found", HttpStatus.BAD_REQUEST),
+    PERMISSION_ALREADY_EXISTS(1015, "Permission already exists", HttpStatus.BAD_REQUEST),
+    ROLE_ALREADY_EXISTS(1016, "Role already exists", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {

@@ -2,6 +2,8 @@ package fptedu.nganmtt.ChinesePractice.service;
 
 import fptedu.nganmtt.ChinesePractice.dto.request.PermissionRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.PermissionResponse;
+import fptedu.nganmtt.ChinesePractice.exception.AppException;
+import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
 import fptedu.nganmtt.ChinesePractice.mapper.PermissionMapper;
 import fptedu.nganmtt.ChinesePractice.model.Permission;
 import fptedu.nganmtt.ChinesePractice.repository.PermissionRepository;
@@ -22,19 +24,37 @@ public class PermissionService {
     PermissionMapper permissionMapper;
 
     public PermissionResponse create(PermissionRequest request) {
-        Permission permission = permissionMapper.toPermission(request);
-        permission = permissionRepository.save(permission);
-        return permissionMapper.toPermissionResponse(permission);
+        try {
+            if (permissionRepository.existsById(request.getName())) {
+                throw new AppException(ErrorCode.PERMISSION_ALREADY_EXISTS);
+            }
+            Permission permission = permissionMapper.toPermission(request);
+            permission = permissionRepository.save(permission);
+            return permissionMapper.toPermissionResponse(permission);
+        } catch (Exception e){
+            log.error("Error creating permission: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public List<PermissionResponse> getAll() {
-        var permissions = permissionRepository.findAll();
-        return permissions.stream()
-                .map(permissionMapper::toPermissionResponse)
-                .toList();
+        try {
+            var permissions = permissionRepository.findAll();
+            return permissions.stream()
+                    .map(permissionMapper::toPermissionResponse)
+                    .toList();
+        } catch (Exception e){
+            log.error("Error fetching permissions: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public void delete(String permission){
-        permissionRepository.deleteById(permission);
+        try {
+            permissionRepository.deleteById(permission);
+        } catch (Exception e){
+            log.error("Error deleting permission {}: {}", permission, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 }
