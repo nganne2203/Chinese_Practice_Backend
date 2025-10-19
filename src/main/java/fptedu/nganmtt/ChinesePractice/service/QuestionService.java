@@ -62,6 +62,10 @@ public class QuestionService {
         try {
             var existingQuestion = questionRepository.findById(java.util.UUID.fromString(id))
                     .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+
+            if (!quizRepository.existsById(java.util.UUID.fromString(id))) {
+                throw new AppException(ErrorCode.QUIZ_NOT_FOUND);
+            }
             questionMapper.updateQuestion(existingQuestion, request);
             questionRepository.save(existingQuestion);
         } catch (Exception e) {

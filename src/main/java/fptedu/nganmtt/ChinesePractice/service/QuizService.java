@@ -87,6 +87,13 @@ public class QuizService {
         try {
             var existingQuiz = quizRepository.findById(java.util.UUID.fromString(id))
                     .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
+            if (!userRepository.existsById(java.util.UUID.fromString(request.getCreatedById()))) {
+                throw new AppException(ErrorCode.USER_NOT_FOUND);
+            }
+
+            if (!lessonRepository.existsById(java.util.UUID.fromString(request.getLessonId()))) {
+                throw new AppException(ErrorCode.LESSON_NOT_FOUND);
+            }
             quizMapper.updateQuizDetail(request, existingQuiz);
             quizRepository.save(existingQuiz);
         } catch (Exception e) {
