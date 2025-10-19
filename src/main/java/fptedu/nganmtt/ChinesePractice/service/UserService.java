@@ -37,82 +37,125 @@ public class UserService {
     RoleRepository roleRepository;
 
     public UserResponse createUser(UserCreationRequest user) {
-        if(userRepository.existsByUserName(user.getUserName()))
-            throw new AppException(ErrorCode.USER_EXISTED);
+        try {
+            if(userRepository.existsByUserName(user.getUserName()))
+                throw new AppException(ErrorCode.USER_EXISTED);
 
-        if (userRepository.existsByEmail(user.getEmail()))
-            throw new AppException(ErrorCode.EMAIL_EXISTED);
+            if (userRepository.existsByEmail(user.getEmail()))
+                throw new AppException(ErrorCode.EMAIL_EXISTED);
 
-        User newUser = userMapper.toUser(user);
-        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            User newUser = userMapper.toUser(user);
+            newUser.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        newUser.setRoles(Set.of(
-                roleRepository.findById("USER")
-                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND))
-        ));
+            newUser.setRoles(Set.of(
+                    roleRepository.findById("USER")
+                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND))
+            ));
 
-        return userMapper.toUserResponse(userRepository.save(newUser));
+            return userMapper.toUserResponse(userRepository.save(newUser));
+        } catch (Exception e) {
+            log.info("In method createUser", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     // has role only for role
     // permission need to use hasAuthority
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
-        log.info("In method get Users");
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserResponse).toList();
+        try {
+            return userRepository.findAll().stream()
+                    .map(userMapper::toUserResponse).toList();
+        } catch (Exception e) {
+            log.info("In method getUsers", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     //only who logged in can get their info
     @PostAuthorize("returnObject.userName == authentication.name")
-    public UserResponse getUserById(UUID id) {
-        return userMapper.toUserResponse(
-                userRepository.findById(id)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND))
-        );
-    }
-
-
-    public void updateUser(UUID id, UserUpdateRequest user) {
-        User updateUser = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        userMapper.updateUser(updateUser, user);
-
-        userRepository.save(updateUser);
-    }
-
-    public void updateRoleUser(UUID id, UserUpdateRoleRequest request) {
-        User updateUser = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        var roles = roleRepository.findAllById(request.getRoles());
-        updateUser.setRoles(new HashSet<>(roles));
-        userRepository.save(updateUser);
-    }
-
-    public void changePassword(UUID id, ChangePasswordRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        boolean matches = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
-        if (!matches) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+    public UserResponse getUserById(String id) {
+        try {
+            return userMapper.toUserResponse(
+                    userRepository.findById(java.util.UUID.fromString(id))
+                            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND))
+            );
+        } catch (Exception e) {
+            log.info("In method getUserById", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
     }
 
-    public void deleteUser(UUID id) {
-        userRepository.deleteById(id);
+
+    public void updateUser(String id, UserUpdateRequest user) {
+        try {
+            User updateUser = userRepository.findById(java.util.UUID.fromString(id))
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            userMapper.updateUser(updateUser, user);
+
+            userRepository.save(updateUser);
+        } catch (Exception e) {
+            log.info("In method updateUser", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    public void updateRoleUser(String id, UserUpdateRoleRequest request) {
+        try {
+            User updateUser = userRepository.findById(java.util.UUID.fromString(id))
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            var roles = roleRepository.findAllById(request.getRoles());
+
+            if (roles.size() != request.getRoles().size()) {
+                throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+            }
+            updateUser.setRoles(new HashSet<>(roles));
+            userRepository.save(updateUser);
+        } catch (Exception e) {
+            log.info("In method updateRoleUser", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    public void changePassword(String id, ChangePasswordRequest request) {
+        try {
+            User user = userRepository.findById(java.util.UUID.fromString(id))
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            boolean matches = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
+            if (!matches) {
+                throw new AppException(ErrorCode.UNAUTHORIZED_EXCEPTION);
+            }
+
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+        } catch (Exception e) {
+            log.info("In method changePassword", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    public void deleteUser(String id) {
+        try {
+            userRepository.deleteById(UUID.fromString(id));
+        } catch (Exception e) {
+            log.info("Delete User with id {} failed", id);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public UserResponse getMyInfo(){
-        var context = SecurityContextHolder.getContext();
-        String name = context.getAuthentication().getName();
-        User byUserName = userRepository.findByUserName(name)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        return userMapper.toUserResponse(byUserName);
+        try {
+            var context = SecurityContextHolder.getContext();
+            String name = context.getAuthentication().getName();
+            User byUserName = userRepository.findByUserName(name)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            return userMapper.toUserResponse(byUserName);
+        } catch (Exception e){
+            log.info("In method getMyInfo", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 }
