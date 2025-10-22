@@ -27,7 +27,7 @@ public class RoleService {
 
     public RoleResponse create (RoleRequest request) {
         try {
-            if (!roleRepository.existsById(request.getName()))
+            if (roleRepository.existsById(request.getName()))
                 throw new AppException(ErrorCode.ROLE_ALREADY_EXISTS);
 
             var role = roleMapper.toRole(request);
