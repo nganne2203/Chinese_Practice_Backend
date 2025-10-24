@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,8 +34,6 @@ public class PermissionService {
             Permission permission = permissionMapper.toPermission(request);
             permission = permissionRepository.save(permission);
             return permissionMapper.toPermissionResponse(permission);
-        } catch () {
-
         } catch (Exception e){
             log.error("Error creating permission: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
