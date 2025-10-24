@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,6 +54,7 @@ public class UnitService {
         }
     }
 
+    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasAuthority('ADMIN')")
     public UnitResponse createUnit(UnitRequest unitRequest) {
         try {
             var unit = unitMapper.toUnit(unitRequest);
@@ -65,6 +67,7 @@ public class UnitService {
         }
     }
 
+    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasAuthority('ADMIN')")
     public void updateUnit(UUID id, UnitUpdateRequest unitRequest) {
         try {
             Unit existingUnit = unitsRepository.findById(id)
@@ -79,6 +82,7 @@ public class UnitService {
         }
     }
 
+    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasAuthority('ADMIN')")
     public void deleteUnit(UUID id) {
         try {
             Unit existingUnit = unitsRepository.findById(id)

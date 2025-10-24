@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class LessonService {
         }
     }
 
+    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasAuthority('ADMIN')")
     public LessonResponse create(LessonRequest request) {
         try {
             var lesson = lessonMapper.toLesson(request);
@@ -49,6 +51,7 @@ public class LessonService {
         }
     }
 
+    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasAuthority('ADMIN')")
     public void update(String id, LessonRequest request) {
         try {
             var existingLesson = lessonRepository.findById(java.util.UUID.fromString(id))
@@ -64,6 +67,7 @@ public class LessonService {
         }
     }
 
+    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasAuthority('ADMIN')")
     public void delete(String id) {
         try {
             var existingLesson = lessonRepository.findById(java.util.UUID.fromString(id))
