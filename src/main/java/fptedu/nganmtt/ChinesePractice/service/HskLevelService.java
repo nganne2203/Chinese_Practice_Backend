@@ -34,7 +34,6 @@ public class HskLevelService {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public HskLevelResponse getById(UUID id){
         try {
             return hskLevelRepository.findById(id)

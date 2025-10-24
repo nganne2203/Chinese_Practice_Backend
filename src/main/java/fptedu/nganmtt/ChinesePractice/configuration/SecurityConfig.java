@@ -3,6 +3,7 @@ package fptedu.nganmtt.ChinesePractice.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -44,6 +45,14 @@ public class SecurityConfig {
             "/webjars/**"
     };
 
+    private final String[] REQUEST_PUBLIC_ENDPOINT = {
+            "/api/hsk-levels/**",
+            "/api/lessons/**",
+            "/api/quizzes/**",
+            "/api/units/**",
+            "/api/vocabularies/**",
+    };
+
     @Value("${app.frontend-url}")
     private String frontendUrl;
 
@@ -56,6 +65,7 @@ public class SecurityConfig {
                 request -> request
                         .requestMatchers(PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers("OPTIONS", "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, REQUEST_PUBLIC_ENDPOINT).permitAll()
                         .anyRequest().authenticated()
         );
 
