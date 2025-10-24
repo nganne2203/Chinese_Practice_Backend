@@ -26,7 +26,7 @@ public class RoleService {
     PermissionRepository permissionRepository;
     RoleMapper roleMapper;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasRole('ADMIN')")
     public RoleResponse create (RoleRequest request) {
         try {
             if (roleRepository.existsById(request.getName()))
@@ -47,7 +47,7 @@ public class RoleService {
         }
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasRole('ADMIN')")
     public List<RoleResponse> getAll() {
         try {
             return roleRepository.findAll().stream()
@@ -58,7 +58,7 @@ public class RoleService {
         }
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasRole('ADMIN')")
     public void delete(String role) {
         try {
             roleRepository.deleteById(role);
