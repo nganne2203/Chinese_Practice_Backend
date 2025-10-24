@@ -33,6 +33,8 @@ public class PermissionService {
             Permission permission = permissionMapper.toPermission(request);
             permission = permissionRepository.save(permission);
             return permissionMapper.toPermissionResponse(permission);
+        } catch () {
+
         } catch (Exception e){
             log.error("Error creating permission: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
