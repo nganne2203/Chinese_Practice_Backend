@@ -4,6 +4,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import fptedu.nganmtt.ChinesePractice.repository.InvalidatedTokenRepository;
 import fptedu.nganmtt.ChinesePractice.service.JwtService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @Component
+@Slf4j
 public class CustomJwtDecoder implements JwtDecoder {
     @Value("${jwt.signer.key}")
     private String signerKey;
@@ -39,17 +41,26 @@ public class CustomJwtDecoder implements JwtDecoder {
             var claims = signedJWT.getJWTClaimsSet();
             
             var type = claims.getStringClaim("type");
-            if (!"access".equals(type)) throw new JwtException("Invalid token type");
-            
+            if (!"access".equals(type)) {
+                log.warn("Invalid token type: {}", type);
+                throw new JwtException("Invalid token type");
+            }
+
             if (!claims.getExpirationTime().after(new Date())) {
+                log.warn("Token expired at: {}", claims.getExpirationTime());
                 throw new JwtException("Token expired");
             }
             
             if (invalidatedTokenRepository.existsById(claims.getJWTID())) {
+                log.warn("Token has been invalidated: {}", claims.getJWTID());
                 throw new JwtException("Token has been invalidated");
             }
-        } catch (JOSEException | ParseException e ) {
-            throw new JwtException("Invalid JWT token: " + e.getMessage(), e);
+        } catch (JOSEException e) {
+            log.error("JWT signature verification failed: {}", e.getMessage());
+            throw new JwtException("Invalid JWT signature: " + e.getMessage(), e);
+        } catch (ParseException e) {
+            log.error("JWT parsing failed: {}", e.getMessage());
+            throw new JwtException("Invalid JWT token format: " + e.getMessage(), e);
         }
 
         if (Objects.isNull(jwtDecoder)) {
