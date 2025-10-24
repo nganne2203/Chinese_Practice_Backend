@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class HskLevelService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public HskLevelResponse getById(UUID id){
         try {
             return hskLevelRepository.findById(id)
@@ -44,6 +46,7 @@ public class HskLevelService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public HskLevelResponse create(HskLevelRequest request) {
         try {
             return hskLevelMapper
@@ -55,6 +58,7 @@ public class HskLevelService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(UUID id) {
         try {
             var hskLevel = hskLevelRepository.findById(id)

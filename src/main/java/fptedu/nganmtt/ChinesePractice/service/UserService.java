@@ -36,6 +36,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
 
+    @PreAuthorize("hasAnyAuthority('USER_MANAGE') or hasRole('ADMIN')")
     public UserResponse createUser(UserCreationRequest user) {
         try {
             if(userRepository.existsByUserName(user.getUserName()))
@@ -101,6 +102,7 @@ public class UserService {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasAuthority('ADMIN')")
     public void updateRoleUser(String id, UserUpdateRoleRequest request) {
         try {
             User updateUser = userRepository.findById(java.util.UUID.fromString(id))

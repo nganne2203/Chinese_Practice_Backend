@@ -18,6 +18,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             throws IOException, ServletException {
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
 
+        if (authException.getMessage() != null && authException.getMessage().toLowerCase().contains("expired"))
+            errorCode = ErrorCode.TOKEN_EXPIRED;
+
         response.setStatus(errorCode.getHttpStatus().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
