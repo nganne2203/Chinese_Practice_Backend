@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,6 +23,7 @@ public class QuestionService {
     QuizRepository quizRepository;
     QuestionMapper questionMapper;
 
+    @PreAuthorize("hasAuthority('QUIZ_MODIFY') or hasRole('ADMIN')")
     public QuestionResponse createQuestion(String quizId, QuestionDetailRequest request) {
         try {
             var question = questionMapper.toQuestionByDetail(request);
@@ -36,6 +38,7 @@ public class QuestionService {
         }
     }
 
+    @PreAuthorize("hasAuthority('QUIZ_MODIFY') or hasRole('ADMIN')")
     public void deleteQuestion(String id) {
         try {
             var question = questionRepository.findById(java.util.UUID.fromString(id))
@@ -58,6 +61,7 @@ public class QuestionService {
         }
     }
 
+    @PreAuthorize("hasAuthority('QUIZ_MODIFY') or hasRole('ADMIN')")
     public void updateQuestion(String id, QuestionDetailRequest request) {
         try {
             var existingQuestion = questionRepository.findById(java.util.UUID.fromString(id))

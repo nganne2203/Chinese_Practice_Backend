@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,6 +56,7 @@ public class VocabularyService {
         }
     }
 
+    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasAuthority('ADMIN')")
     public VocabularyResponse createVocabulary(VocabularyRequest request) {
         try {
             var vocabulary = vocabularyMapper.toVocabulary(request);
@@ -68,6 +70,7 @@ public class VocabularyService {
         }
     }
 
+    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasAuthority('ADMIN')")
     public void updateVocabulary(String id, VocabularyRequest request) {
         try{
             var existingVocabulary = vocabularyRepository
@@ -84,6 +87,7 @@ public class VocabularyService {
         }
     }
 
+    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasAuthority('ADMIN')")
     public void deleteVocabulary(String id) {
         try {
             var existingVocabulary = vocabularyRepository

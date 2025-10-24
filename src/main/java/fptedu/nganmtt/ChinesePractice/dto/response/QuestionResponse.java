@@ -16,6 +16,7 @@ import java.util.List;
         title = "QuestionResponse"
 )
 public class QuestionResponse {
+    String id;
     String questionText;
     String answer;
     List<String> options;

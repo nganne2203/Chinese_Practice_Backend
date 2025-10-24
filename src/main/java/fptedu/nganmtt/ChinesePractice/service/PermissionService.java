@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class PermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
 
+    @PreAuthorize("hasAuthority('PERMISSION_MANAGE') or hasRole('ADMIN')")
     public PermissionResponse create(PermissionRequest request) {
         try {
             if (permissionRepository.existsById(request.getName())) {
@@ -37,6 +39,7 @@ public class PermissionService {
         }
     }
 
+    @PreAuthorize("hasAuthority('PERMISSION_MANAGE') or hasRole('ADMIN')")
     public List<PermissionResponse> getAll() {
         try {
             var permissions = permissionRepository.findAll();
@@ -49,6 +52,7 @@ public class PermissionService {
         }
     }
 
+    @PreAuthorize("hasAuthority('PERMISSION_MANAGE') or hasRole('ADMIN')")
     public void delete(String permission){
         try {
             permissionRepository.deleteById(permission);
