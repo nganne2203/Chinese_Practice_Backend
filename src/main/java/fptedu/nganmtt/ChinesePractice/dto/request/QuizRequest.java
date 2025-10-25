@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -29,4 +30,12 @@ public class QuizRequest {
     String createdById;
     @NotNull(message = "FIELD_REQUIRED")
     Set<QuestionDetailRequest> questions;
+
+    Integer durationInMinutes;
+    boolean isTimed;
+    LocalDateTime startTime;
+
+    LocalDateTime endTime;
+
+    int attemptLimit;
 }

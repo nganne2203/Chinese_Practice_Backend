@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,6 +38,16 @@ public class Quiz {
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Question> questions;
+
+    Integer durationInMinutes;
+
+    boolean isTimed;
+
+    LocalDateTime startTime;
+
+    LocalDateTime endTime;
+
+    int attemptLimit;
 
     public enum QuizType {
         MULTIPLE_CHOICE,
