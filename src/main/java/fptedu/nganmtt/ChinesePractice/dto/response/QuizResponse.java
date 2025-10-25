@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -22,4 +23,11 @@ public class QuizResponse {
     LessonResponse lesson;
     UserResponse createdBy;
     Set<QuestionDetailResponse> questions;
+    Integer durationInMinutes;
+    boolean isTimed;
+    LocalDateTime startTime;
+
+    LocalDateTime endTime;
+
+    int attemptLimit;
 }

@@ -29,7 +29,8 @@ public enum ErrorCode {
     QUESTION_NOT_FOUND(2006, "Question not found", HttpStatus.BAD_REQUEST),
     PERMISSION_ALREADY_EXISTS(1015, "Permission already exists", HttpStatus.BAD_REQUEST),
     ROLE_ALREADY_EXISTS(1016, "Role already exists", HttpStatus.BAD_REQUEST),
-    TOKEN_EXPIRED(1017, "Token has expired", HttpStatus.UNAUTHORIZED)
+    TOKEN_EXPIRED(1017, "Token has expired", HttpStatus.UNAUTHORIZED),
+    QUIZ_NOT_AVAILABLE(2020, "Quiz is not available", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {
