@@ -56,7 +56,7 @@ public class VocabularyService {
         }
     }
 
-    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasRole('ADMIN')")
     public VocabularyResponse createVocabulary(VocabularyRequest request) {
         try {
             var vocabulary = vocabularyMapper.toVocabulary(request);
@@ -70,7 +70,7 @@ public class VocabularyService {
         }
     }
 
-    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasRole('ADMIN')")
     public void updateVocabulary(String id, VocabularyRequest request) {
         try{
             var existingVocabulary = vocabularyRepository
@@ -87,7 +87,7 @@ public class VocabularyService {
         }
     }
 
-    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('VOCABULARY_MANAGE') or hasRole('ADMIN')")
     public void deleteVocabulary(String id) {
         try {
             var existingVocabulary = vocabularyRepository
