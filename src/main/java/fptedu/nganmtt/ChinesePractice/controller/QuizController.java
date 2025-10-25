@@ -1,12 +1,10 @@
 package fptedu.nganmtt.ChinesePractice.controller;
 
-import fptedu.nganmtt.ChinesePractice.dto.request.ApiResult;
-import fptedu.nganmtt.ChinesePractice.dto.request.QuestionDetailRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.QuizDetailRequest;
-import fptedu.nganmtt.ChinesePractice.dto.request.QuizRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.*;
 import fptedu.nganmtt.ChinesePractice.dto.response.QuestionResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.QuizDetailResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.QuizResponse;
+import fptedu.nganmtt.ChinesePractice.dto.response.QuizResultResponse;
 import fptedu.nganmtt.ChinesePractice.service.QuestionService;
 import fptedu.nganmtt.ChinesePractice.service.QuizService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -163,4 +161,46 @@ public class QuizController {
                 .build();
     }
 
+    @Operation(summary = "Start a quiz", description = "Marks the quiz as started and records the start time.", tags = {"Quiz"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quiz started successfully", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Quiz not found or not allow at this time", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Uncategorized exception", content = @Content)
+    })
+    @PostMapping("/{quizId}/start")
+    public ApiResult<Void> startQuiz(@PathVariable String quizId) {
+        quizService.startQuiz(quizId);
+        return ApiResult.<Void>builder()
+                .message("Quiz started successfully")
+                .build();
+    }
+
+    @Operation(summary = "Submit a quiz", description = "Submits the quiz answers and calculates the result.", tags = {"Quiz"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quiz submitted successfully", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = QuizResultResponse.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Quiz or User not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Uncategorized exception", content = @Content)
+    })
+    @PostMapping("/{quizId}/submit")
+    public ApiResult<QuizResultResponse> submitQuiz(@PathVariable String quizId, @RequestBody @Valid QuizSubmissionRequest request) {
+        return ApiResult.<QuizResultResponse>builder()
+                .result(quizService.submitQuiz(quizId, request))
+                .build();
+    }
+
+    @Operation(summary = "Get all quizzes", description = "Retrieves a list of all quizzes available in the system.", tags = {"Quiz"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quizzes retrieved successfully", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = QuizResponse.class))
+            }),
+            @ApiResponse(responseCode = "500", description = "Uncategorized exception", content = @Content)
+    })
+    @GetMapping()
+    public ApiResult<List<QuizResponse>> getAllQuestions() {
+        return ApiResult.<List<QuizResponse>>builder()
+                .result(quizService.getAllQuizzes())
+                .build();
+    }
 }

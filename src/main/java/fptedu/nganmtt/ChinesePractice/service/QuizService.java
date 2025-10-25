@@ -1,15 +1,17 @@
 package fptedu.nganmtt.ChinesePractice.service;
 
 import fptedu.nganmtt.ChinesePractice.dto.request.QuizDetailRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.QuizSubmissionRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.QuizDetailResponse;
 import fptedu.nganmtt.ChinesePractice.dto.response.QuizResponse;
+import fptedu.nganmtt.ChinesePractice.dto.response.QuizResultResponse;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
 import fptedu.nganmtt.ChinesePractice.mapper.QuizMapper;
+import fptedu.nganmtt.ChinesePractice.model.Question;
 import fptedu.nganmtt.ChinesePractice.model.Quiz;
-import fptedu.nganmtt.ChinesePractice.repository.LessonRepository;
-import fptedu.nganmtt.ChinesePractice.repository.QuizRepository;
-import fptedu.nganmtt.ChinesePractice.repository.UserRepository;
+import fptedu.nganmtt.ChinesePractice.model.UserProgress;
+import fptedu.nganmtt.ChinesePractice.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,6 +31,8 @@ public class QuizService {
     QuizMapper quizMapper;
     UserRepository userRepository;
     LessonRepository lessonRepository;
+    QuestionRepository questionRepository;
+    UserProgressRepository userProgressRepository;
 
     @PreAuthorize("hasAuthority('QUIZ_MODIFY') or hasRole('ADMIN')")
     public QuizDetailResponse createQuiz(QuizDetailRequest request) {
@@ -75,6 +80,18 @@ public class QuizService {
         }
     }
 
+    public List<QuizResponse> getAllQuizzes() {
+        try {
+            return quizRepository.findAll()
+                    .stream()
+                    .map(quizMapper::toQuizResponse)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Error fetching all quizzes: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
     public QuizResponse getQuizById(String id) {
         try {
             return quizRepository.findById(java.util.UUID.fromString(id))
@@ -102,6 +119,68 @@ public class QuizService {
             quizRepository.save(existingQuiz);
         } catch (Exception e) {
             log.error("Error updating quiz with id {}: {}", id, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    public void startQuiz(String quizId) {
+        try {
+            var quiz = quizRepository.findById(java.util.UUID.fromString(quizId))
+                    .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
+
+            if (quiz.isTimed() && quiz.getStartTime() != null) {
+                LocalDateTime now = LocalDateTime.now();
+
+                if (now.isBefore(quiz.getStartTime()) || now.isAfter(quiz.getEndTime())) {
+                    throw new AppException(ErrorCode.QUIZ_NOT_AVAILABLE);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error starting quiz with id {}: {}", quizId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    public QuizResultResponse submitQuiz(String quizId, QuizSubmissionRequest request) {
+        try {
+            var quiz = quizRepository.findById(java.util.UUID.fromString(quizId))
+                    .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
+
+            var user = userRepository.findById(java.util.UUID.fromString(request.getUserId()))
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            var questions = questionRepository.findAllByQuiz_Id(java.util.UUID.fromString(quizId));
+
+            int totalQuestions = questions.size();
+
+            int correct = 0;
+
+            for (Question question : questions) {
+                String userAnswer = request.getAnswers().get(question.getId());
+
+                if (userAnswer != null && question.getAnswer().trim().equalsIgnoreCase(userAnswer.trim()))
+                    correct++;
+            }
+
+            int score = (int) ((correct * 100.0) / totalQuestions);
+
+            UserProgress progress = UserProgress.builder()
+                    .user(user)
+                    .quiz(quiz)
+                    .score(score)
+                    .lesson(quiz.getLesson())
+                    .completedAt(LocalDateTime.now())
+                    .build();
+
+            userProgressRepository.save(progress);
+
+            return QuizResultResponse.builder()
+                    .score(score)
+                    .totalQuestions(totalQuestions)
+                    .completedAt(progress.getCompletedAt())
+                    .build();
+        } catch (Exception e) {
+            log.error("Error submitting quiz with id {}: {}", quizId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
