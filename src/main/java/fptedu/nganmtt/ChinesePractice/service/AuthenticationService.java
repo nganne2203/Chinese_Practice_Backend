@@ -55,6 +55,9 @@ public class AuthenticationService {
                     .refreshToken(refreshToken)
                     .user(userMapper.toUserResponse(user))
                     .build();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method authenticate", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -104,6 +107,9 @@ public class AuthenticationService {
             userRepository.save(user);
 
             return userMapper.toUserResponse(user);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method register", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -186,6 +192,9 @@ public class AuthenticationService {
                     .refreshToken(refreshToken)
                     .authenticated(true)
                     .build();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method refreshToken", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

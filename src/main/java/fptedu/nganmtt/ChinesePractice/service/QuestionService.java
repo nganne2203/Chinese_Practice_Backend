@@ -32,6 +32,9 @@ public class QuestionService {
 
             question.setQuiz(quiz);
             return questionMapper.toQuestionResponse(questionRepository.save(question));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating question for quiz id {}: {}", quizId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -44,6 +47,9 @@ public class QuestionService {
             var question = questionRepository.findById(java.util.UUID.fromString(id))
                     .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
             questionRepository.delete(question);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting question with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -55,6 +61,9 @@ public class QuestionService {
             return questionRepository.findById(java.util.UUID.fromString(id))
                     .map(questionMapper::toQuestionResponse)
                     .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching question by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -72,6 +81,9 @@ public class QuestionService {
             }
             questionMapper.updateQuestion(existingQuestion, request);
             questionRepository.save(existingQuestion);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error updating question with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

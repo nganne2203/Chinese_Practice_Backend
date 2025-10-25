@@ -38,6 +38,9 @@ public class VocabularyService {
                     .map(vocabularyMapper::toVocabularyResponse)
                     .toList();
 
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching vocabularies by unit {} and HSK level {}: {}", unitId, hskLevelId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -50,6 +53,9 @@ public class VocabularyService {
             return vocabularyRepository.findById(java.util.UUID.fromString(id))
                     .map(vocabularyMapper::toVocabularyResponse)
                     .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_NOT_FOUND));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching vocabularies by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -64,6 +70,9 @@ public class VocabularyService {
                     .findById(java.util.UUID.fromString(request.getLessonId()))
                     .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND)));
             return vocabularyMapper.toVocabularyResponse(vocabularyRepository.save(vocabulary));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating vocabulary: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -81,6 +90,9 @@ public class VocabularyService {
                     .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND)));
             vocabularyMapper.updateVocabularyFromRequest(request, existingVocabulary);
             vocabularyRepository.save(existingVocabulary);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching vocabulary by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -94,6 +106,9 @@ public class VocabularyService {
                     .findById(java.util.UUID.fromString(id))
                     .orElseThrow(() -> new AppException(ErrorCode.VOCABULARY_NOT_FOUND));
             vocabularyRepository.delete(existingVocabulary);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting vocabulary by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -106,6 +121,9 @@ public class VocabularyService {
                     .stream()
                     .map(vocabularyMapper::toVocabularyResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching all vocabularies: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -118,6 +136,9 @@ public class VocabularyService {
                     .stream()
                     .map(vocabularyMapper::toVocabularyDetailResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error searching vocabulary detail by keyword {}: {}", keyword, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
