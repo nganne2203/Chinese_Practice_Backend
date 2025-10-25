@@ -30,7 +30,9 @@ public enum ErrorCode {
     PERMISSION_ALREADY_EXISTS(1015, "Permission already exists", HttpStatus.BAD_REQUEST),
     ROLE_ALREADY_EXISTS(1016, "Role already exists", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(1017, "Token has expired", HttpStatus.UNAUTHORIZED),
-    QUIZ_NOT_AVAILABLE(2020, "Quiz is not available", HttpStatus.BAD_REQUEST)
+    QUIZ_NOT_AVAILABLE(2020, "Quiz is not available", HttpStatus.BAD_REQUEST),
+    QUIZ_ATTEMPT_LIMIT_EXCEEDED(2021, "You have exceeded the maximum number of attempts for this quiz", HttpStatus.BAD_REQUEST)
+
     ;
 
     ErrorCode(int code, String message, HttpStatus httpStatus) {

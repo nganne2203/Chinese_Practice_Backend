@@ -28,6 +28,9 @@ public class HskLevelService {
         try {
             return hskLevelRepository.findAll().stream()
                     .map(hskLevelMapper::toHskLevelResponse).toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching all HSK levels: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -39,6 +42,9 @@ public class HskLevelService {
             return hskLevelRepository.findById(id)
                     .map(hskLevelMapper::toHskLevelResponse)
                     .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching HSK level by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -51,6 +57,9 @@ public class HskLevelService {
             return hskLevelMapper
                     .toHskLevelResponse(hskLevelRepository
                             .save(hskLevelMapper.toHskLevel(request)));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating HSK level: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -63,6 +72,9 @@ public class HskLevelService {
             var hskLevel = hskLevelRepository.findById(id)
                     .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND));
             hskLevelRepository.delete(hskLevel);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting HSK level with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

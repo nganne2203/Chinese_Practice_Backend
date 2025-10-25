@@ -54,6 +54,9 @@ public class UserService {
             ));
 
             return userMapper.toUserResponse(userRepository.save(newUser));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method createUser", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -67,6 +70,9 @@ public class UserService {
         try {
             return userRepository.findAll().stream()
                     .map(userMapper::toUserResponse).toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method getUsers", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -81,6 +87,9 @@ public class UserService {
                     userRepository.findById(java.util.UUID.fromString(id))
                             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND))
             );
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method getUserById", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -96,6 +105,9 @@ public class UserService {
             userMapper.updateUser(updateUser, user);
 
             userRepository.save(updateUser);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method updateUser", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -115,6 +127,9 @@ public class UserService {
             }
             updateUser.setRoles(new HashSet<>(roles));
             userRepository.save(updateUser);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method updateRoleUser", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -133,6 +148,9 @@ public class UserService {
 
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             userRepository.save(user);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("In method changePassword", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -142,6 +160,9 @@ public class UserService {
     public void deleteUser(String id) {
         try {
             userRepository.deleteById(UUID.fromString(id));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.info("Delete User with id {} failed", id);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -155,6 +176,9 @@ public class UserService {
             User byUserName = userRepository.findByUserName(name)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             return userMapper.toUserResponse(byUserName);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e){
             log.info("In method getMyInfo", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

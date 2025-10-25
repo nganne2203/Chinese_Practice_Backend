@@ -41,6 +41,9 @@ public class RoleService {
             role = roleRepository.save(role);
 
             return roleMapper.toRoleResponse(role);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -52,6 +55,9 @@ public class RoleService {
         try {
             return roleRepository.findAll().stream()
                     .map(roleMapper::toRoleResponse).toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -62,6 +68,9 @@ public class RoleService {
     public void delete(String role) {
         try {
             roleRepository.deleteById(role);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

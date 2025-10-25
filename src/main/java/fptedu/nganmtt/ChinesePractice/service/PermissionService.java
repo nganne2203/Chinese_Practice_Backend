@@ -33,6 +33,9 @@ public class PermissionService {
             Permission permission = permissionMapper.toPermission(request);
             permission = permissionRepository.save(permission);
             return permissionMapper.toPermissionResponse(permission);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e){
             log.error("Error creating permission: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -46,6 +49,9 @@ public class PermissionService {
             return permissions.stream()
                     .map(permissionMapper::toPermissionResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e){
             log.error("Error fetching permissions: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -56,6 +62,9 @@ public class PermissionService {
     public void delete(String permission){
         try {
             permissionRepository.deleteById(permission);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e){
             log.error("Error deleting permission {}: {}", permission, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

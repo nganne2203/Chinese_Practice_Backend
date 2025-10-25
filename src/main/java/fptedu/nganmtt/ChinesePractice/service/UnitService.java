@@ -37,6 +37,9 @@ public class UnitService {
             return unitsRepository.findAllByLevel_Id(java.util.UUID.fromString(levelId))
                     .stream().map(unitMapper::toUnitResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching units by HSK level {}: {}", levelId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -48,6 +51,9 @@ public class UnitService {
             return unitsRepository.findById(id)
                     .map(unitMapper::toUnitResponse)
                     .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching unit by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -61,6 +67,9 @@ public class UnitService {
             unit.setLevel(hskLevelRepository.findById(UUID.fromString(unitRequest.getLevelId()))
                     .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND)));
             return unitMapper.toUnitResponse(unitsRepository.save(unit));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating unit: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -76,6 +85,9 @@ public class UnitService {
                     .orElseThrow(() -> new AppException(ErrorCode.HSK_LEVEL_NOT_FOUND)));
             unitMapper.updateUnit(existingUnit, unitRequest);
             unitsRepository.save(existingUnit);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error updating unit with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -88,6 +100,9 @@ public class UnitService {
             Unit existingUnit = unitsRepository.findById(id)
                     .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND));
             unitsRepository.delete(existingUnit);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting unit with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -100,6 +115,9 @@ public class UnitService {
                     .stream()
                     .map(unitMapper::toUnitResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching all units: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
