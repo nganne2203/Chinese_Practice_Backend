@@ -102,7 +102,7 @@ public class UserService {
         }
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasRole('ADMIN')")
     public void updateRoleUser(String id, UserUpdateRoleRequest request) {
         try {
             User updateUser = userRepository.findById(java.util.UUID.fromString(id))
