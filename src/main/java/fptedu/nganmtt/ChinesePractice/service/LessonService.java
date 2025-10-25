@@ -37,7 +37,7 @@ public class LessonService {
         }
     }
 
-    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasRole('ADMIN')")
     public LessonResponse create(LessonRequest request) {
         try {
             var lesson = lessonMapper.toLesson(request);
@@ -51,7 +51,7 @@ public class LessonService {
         }
     }
 
-    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasRole('ADMIN')")
     public void update(String id, LessonRequest request) {
         try {
             var existingLesson = lessonRepository.findById(java.util.UUID.fromString(id))
@@ -67,7 +67,7 @@ public class LessonService {
         }
     }
 
-    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('LESSON_MANAGE') or hasRole('ADMIN')")
     public void delete(String id) {
         try {
             var existingLesson = lessonRepository.findById(java.util.UUID.fromString(id))

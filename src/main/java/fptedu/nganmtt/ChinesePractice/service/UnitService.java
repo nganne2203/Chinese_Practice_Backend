@@ -54,7 +54,7 @@ public class UnitService {
         }
     }
 
-    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasRole('ADMIN')")
     public UnitResponse createUnit(UnitRequest unitRequest) {
         try {
             var unit = unitMapper.toUnit(unitRequest);
@@ -67,7 +67,7 @@ public class UnitService {
         }
     }
 
-    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasRole('ADMIN')")
     public void updateUnit(UUID id, UnitUpdateRequest unitRequest) {
         try {
             Unit existingUnit = unitsRepository.findById(id)
@@ -82,7 +82,7 @@ public class UnitService {
         }
     }
 
-    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('UNIT_MANAGE') or hasRole('ADMIN')")
     public void deleteUnit(UUID id) {
         try {
             Unit existingUnit = unitsRepository.findById(id)
