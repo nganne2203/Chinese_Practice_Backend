@@ -50,6 +50,9 @@ public class QuizService {
             quiz.setLesson(lesson);
 
             return quizMapper.toQuizDetailResponse(quizRepository.save(quiz));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating quiz: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -62,6 +65,9 @@ public class QuizService {
             var quiz = quizRepository.findById(java.util.UUID.fromString(id))
                     .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
             quizRepository.delete(quiz);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting quiz with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -74,18 +80,24 @@ public class QuizService {
                     .stream()
                     .map(quizMapper::toQuizDetailResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching quizzes for lesson id {}: {}", lessonId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 
-    public List<QuizResponse> getAllQuizzes() {
+    public List<QuizDetailResponse> getAllQuizzes() {
         try {
             return quizRepository.findAll()
                     .stream()
-                    .map(quizMapper::toQuizResponse)
+                    .map(quizMapper::toQuizDetailResponse)
                     .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching all quizzes: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -97,6 +109,9 @@ public class QuizService {
             return quizRepository.findById(java.util.UUID.fromString(id))
                     .map(quizMapper::toQuizResponse)
                     .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching quiz by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -117,16 +132,22 @@ public class QuizService {
             }
             quizMapper.updateQuizDetail(request, existingQuiz);
             quizRepository.save(existingQuiz);
+        } catch (AppException e) {
+            log.error("Error updating quiz with id {}: {}", id, e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error updating quiz with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 
-    public void startQuiz(String quizId) {
+    public void startQuiz(String userId,String quizId) {
         try {
             var quiz = quizRepository.findById(java.util.UUID.fromString(quizId))
                     .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
+
+            var user = userRepository.findById(java.util.UUID.fromString(userId))
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
             if (quiz.isTimed() && quiz.getStartTime() != null) {
                 LocalDateTime now = LocalDateTime.now();
@@ -135,6 +156,16 @@ public class QuizService {
                     throw new AppException(ErrorCode.QUIZ_NOT_AVAILABLE);
                 }
             }
+
+            if (quiz.getAttemptLimit() != null) {
+                long attempts = userProgressRepository.countByQuiz_IdAndUser_Id(quiz.getId(), user.getId());
+                if (attempts >= quiz.getAttemptLimit()) {
+                    throw new AppException(ErrorCode.QUIZ_ATTEMPT_LIMIT_EXCEEDED);
+                }
+            }
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error starting quiz with id {}: {}", quizId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -179,6 +210,9 @@ public class QuizService {
                     .totalQuestions(totalQuestions)
                     .completedAt(progress.getCompletedAt())
                     .build();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error submitting quiz with id {}: {}", quizId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

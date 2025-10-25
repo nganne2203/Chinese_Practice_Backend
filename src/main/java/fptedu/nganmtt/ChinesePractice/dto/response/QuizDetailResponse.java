@@ -27,5 +27,5 @@ public class QuizDetailResponse {
 
     LocalDateTime endTime;
 
-    int attemptLimit;
+    Integer attemptLimit;
 }

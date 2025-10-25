@@ -47,7 +47,7 @@ public class Quiz {
 
     LocalDateTime endTime;
 
-    int attemptLimit;
+    Integer attemptLimit;
 
     public enum QuizType {
         MULTIPLE_CHOICE,

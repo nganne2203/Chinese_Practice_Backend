@@ -167,9 +167,9 @@ public class QuizController {
             @ApiResponse(responseCode = "400", description = "Quiz not found or not allow at this time", content = @Content),
             @ApiResponse(responseCode = "500", description = "Uncategorized exception", content = @Content)
     })
-    @PostMapping("/{quizId}/start")
-    public ApiResult<Void> startQuiz(@PathVariable String quizId) {
-        quizService.startQuiz(quizId);
+    @PostMapping("/{quizId}/start/{userId}")
+    public ApiResult<Void> startQuiz(@PathVariable String quizId, @PathVariable String userId) {
+        quizService.startQuiz(userId, quizId);
         return ApiResult.<Void>builder()
                 .message("Quiz started successfully")
                 .build();
@@ -198,8 +198,8 @@ public class QuizController {
             @ApiResponse(responseCode = "500", description = "Uncategorized exception", content = @Content)
     })
     @GetMapping()
-    public ApiResult<List<QuizResponse>> getAllQuestions() {
-        return ApiResult.<List<QuizResponse>>builder()
+    public ApiResult<List<QuizDetailResponse>> getAllQuestions() {
+        return ApiResult.<List<QuizDetailResponse>>builder()
                 .result(quizService.getAllQuizzes())
                 .build();
     }

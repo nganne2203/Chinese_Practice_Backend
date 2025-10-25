@@ -31,6 +31,9 @@ public class LessonService {
             return lessonRepository.findById(java.util.UUID.fromString(id))
                     .map(lessonMapper::toLessonResponse)
                     .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching lesson by id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -45,6 +48,9 @@ public class LessonService {
                     .findById(java.util.UUID.fromString(request.getUnitId()))
                     .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND)));
             return lessonMapper.toLessonResponse(lessonRepository.save(lesson));
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating lesson: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -61,6 +67,9 @@ public class LessonService {
                     .orElseThrow(() -> new AppException(ErrorCode.UNIT_NOT_FOUND)));
             lessonMapper.updateLesson(existingLesson, request);
             lessonRepository.save(existingLesson);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error updating lesson with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -73,6 +82,9 @@ public class LessonService {
             var existingLesson = lessonRepository.findById(java.util.UUID.fromString(id))
                     .orElseThrow(() -> new AppException(ErrorCode.LESSON_NOT_FOUND));
             lessonRepository.delete(existingLesson);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting lesson with id {}: {}", id, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -85,6 +97,9 @@ public class LessonService {
                     .stream()
                     .map(lessonMapper::toLessonResponse)
                     .collect(Collectors.toList());
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching all lessons: {}", e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

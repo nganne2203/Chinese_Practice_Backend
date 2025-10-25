@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface UserProgressRepository extends JpaRepository<UserProgress, UUID> {
     List<UserProgress> findAllByUser_Id(UUID userId);
+
+    long countByQuiz_IdAndUser_Id(UUID quizId, UUID userId);
 }
