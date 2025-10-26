@@ -32,7 +32,7 @@ public class QuizDetailRequest {
     String createdById;
 
     Integer durationInMinutes;
-    boolean isTimed;
+    boolean timed;
     LocalDateTime startTime;
 
     LocalDateTime endTime;

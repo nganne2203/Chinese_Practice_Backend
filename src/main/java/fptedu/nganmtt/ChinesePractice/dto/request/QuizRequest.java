@@ -32,10 +32,10 @@ public class QuizRequest {
     Set<QuestionDetailRequest> questions;
 
     Integer durationInMinutes;
-    boolean isTimed;
+    boolean timed;
     LocalDateTime startTime;
 
     LocalDateTime endTime;
 
-    int attemptLimit;
+    Integer attemptLimit;
 }

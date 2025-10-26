@@ -22,7 +22,7 @@ public class QuizDetailResponse {
     LessonResponse lesson;
     UserResponse createdBy;
     Integer durationInMinutes;
-    boolean isTimed;
+    boolean timed;
     LocalDateTime startTime;
 
     LocalDateTime endTime;

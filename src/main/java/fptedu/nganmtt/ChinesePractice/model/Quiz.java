@@ -41,7 +41,7 @@ public class Quiz {
 
     Integer durationInMinutes;
 
-    boolean isTimed;
+    boolean timed;
 
     LocalDateTime startTime;
 

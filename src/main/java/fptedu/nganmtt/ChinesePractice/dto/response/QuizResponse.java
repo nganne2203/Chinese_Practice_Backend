@@ -24,10 +24,8 @@ public class QuizResponse {
     UserResponse createdBy;
     Set<QuestionDetailResponse> questions;
     Integer durationInMinutes;
-    boolean isTimed;
+    boolean timed;
     LocalDateTime startTime;
-
     LocalDateTime endTime;
-
-    int attemptLimit;
+    Integer attemptLimit;
 }
