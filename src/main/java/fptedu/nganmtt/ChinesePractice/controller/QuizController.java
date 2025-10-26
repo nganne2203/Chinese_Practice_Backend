@@ -16,10 +16,12 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/quizzes")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -39,6 +41,7 @@ public class QuizController {
     })
     @PostMapping
     public ApiResult<QuizDetailResponse> createQuiz(@RequestBody @Valid QuizDetailRequest quizRequest) {
+        log.warn("Received quiz creation request: {}", quizRequest);
         return ApiResult.<QuizDetailResponse>builder()
                 .result(quizService.createQuiz(quizRequest))
                 .build();

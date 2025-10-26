@@ -31,7 +31,8 @@ public enum ErrorCode {
     ROLE_ALREADY_EXISTS(1016, "Role already exists", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(1017, "Token has expired", HttpStatus.UNAUTHORIZED),
     QUIZ_NOT_AVAILABLE(2020, "Quiz is not available", HttpStatus.BAD_REQUEST),
-    QUIZ_ATTEMPT_LIMIT_EXCEEDED(2021, "You have exceeded the maximum number of attempts for this quiz", HttpStatus.BAD_REQUEST)
+    QUIZ_ATTEMPT_LIMIT_EXCEEDED(2021, "You have exceeded the maximum number of attempts for this quiz", HttpStatus.BAD_REQUEST),
+    INVALID_QUIZ_TIME(2022, "Invalid quiz time settings", HttpStatus.BAD_REQUEST)
 
     ;
 
