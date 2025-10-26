@@ -37,6 +37,8 @@ public class QuizService {
     @PreAuthorize("hasAuthority('QUIZ_MODIFY') or hasRole('ADMIN')")
     public QuizDetailResponse createQuiz(QuizDetailRequest request) {
         try {
+            validateQuizTime(request);
+
             var quiz = quizMapper.toQuizDetail(request);
             var createBy = userRepository
                     .findById(java.util.UUID.fromString(request.getCreatedById()))
@@ -130,6 +132,8 @@ public class QuizService {
             if (!lessonRepository.existsById(java.util.UUID.fromString(request.getLessonId()))) {
                 throw new AppException(ErrorCode.LESSON_NOT_FOUND);
             }
+
+            validateQuizTime(request);
             quizMapper.updateQuizDetail(request, existingQuiz);
             quizRepository.save(existingQuiz);
         } catch (AppException e) {
@@ -216,6 +220,19 @@ public class QuizService {
         } catch (Exception e) {
             log.error("Error submitting quiz with id {}: {}", quizId, e.getMessage());
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    private void validateQuizTime(QuizDetailRequest request) {
+        if (request.isTimed()) {
+            if (request.getStartTime() == null || request.getEndTime() == null ||
+                    request.getEndTime().isBefore(request.getStartTime())) {
+                throw new AppException(ErrorCode.INVALID_QUIZ_TIME);
+            }
+        } else {
+            if (request.getStartTime() != null || request.getEndTime() != null) {
+                throw new AppException(ErrorCode.INVALID_QUIZ_TIME);
+            }
         }
     }
 }
