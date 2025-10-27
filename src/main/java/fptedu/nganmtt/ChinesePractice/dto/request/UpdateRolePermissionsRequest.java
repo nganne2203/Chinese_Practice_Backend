@@ -14,16 +14,11 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Schema(
-        description = "Request to create or update a role",
-        title = "RoleRequest",
-        requiredProperties = {"name", "permissions"}
+        description = "Request to update role permissions",
+        title = "UpdateRolePermissionsRequest",
+        requiredProperties = {"permissions"}
 )
-public class RoleRequest {
-
-    @NotBlank(message = "FIELD_REQUIRED")
-    String name;
-    String description;
-
+public class UpdateRolePermissionsRequest {
     @NotNull(message = "FIELD_REQUIRED")
     Set<String> permissions;
 }
