@@ -1,6 +1,7 @@
 package fptedu.nganmtt.ChinesePractice.service;
 
 import fptedu.nganmtt.ChinesePractice.dto.request.RoleRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.UpdateRolePermissionsRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.RoleResponse;
 import fptedu.nganmtt.ChinesePractice.exception.AppException;
 import fptedu.nganmtt.ChinesePractice.exception.ErrorCode;
@@ -68,6 +69,23 @@ public class RoleService {
     public void delete(String role) {
         try {
             roleRepository.deleteById(role);
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGE') or hasRole('ADMIN')")
+    public void updateRolePermissions(String roleId, UpdateRolePermissionsRequest request) {
+        try {
+            var role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+            var permissions = permissionRepository.findAllById(request.getPermissions());
+            role.setPermissions(new HashSet<>(permissions));
+            roleRepository.save(role);
         } catch (AppException e) {
             log.error(e.getMessage());
             throw e;

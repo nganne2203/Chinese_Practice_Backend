@@ -36,5 +36,6 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, UUID> {
 """)
     List<Vocabulary> findByChineseWord(@Param("chineseWord") String chineseWord);
 
+    List<Vocabulary> findAllByLesson_Id(UUID lessonId);
 
 }

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/vocabularies")
@@ -128,6 +129,20 @@ public class VocabularyController {
     public ApiResult<List<VocabularyDetailResponse>> searchVocabulary(@RequestParam(name = "keyword", required = false) String keyword) {
         return ApiResult.<List<VocabularyDetailResponse>>builder()
                 .result(vocabularyService.searchVocabularyDetailByKeyword(keyword))
+                .build();
+    }
+
+    @Operation(summary = "Get vocabularies by lesson ID", description = "Retrieve a list of vocabularies associated with a specific lesson ID.", tags = {"Vocabulary"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved vocabularies", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = VocabularyResponse.class))
+            }),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @GetMapping("/lesson/{lessonId}")
+    public ApiResult<List<VocabularyResponse>> getVocabularyByLessonId(@PathVariable String lessonId) {
+        return ApiResult.<List<VocabularyResponse>>builder()
+                .result(vocabularyService.getVocabulariesByLessonId(lessonId))
                 .build();
     }
 

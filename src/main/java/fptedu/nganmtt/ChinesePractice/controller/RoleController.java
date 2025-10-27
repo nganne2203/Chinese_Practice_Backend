@@ -2,6 +2,7 @@ package fptedu.nganmtt.ChinesePractice.controller;
 
 import fptedu.nganmtt.ChinesePractice.dto.request.ApiResult;
 import fptedu.nganmtt.ChinesePractice.dto.request.RoleRequest;
+import fptedu.nganmtt.ChinesePractice.dto.request.UpdateRolePermissionsRequest;
 import fptedu.nganmtt.ChinesePractice.dto.response.RoleResponse;
 import fptedu.nganmtt.ChinesePractice.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,6 +67,20 @@ public class RoleController {
         roleService.delete(role);
         return ApiResult.<Void>builder()
                 .message("Role deleted successfully")
+                .build();
+    }
+
+    @Operation(summary = "Update role permissions", description = "Updates the permissions associated with a specific role.", tags = {"Role"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Role permissions updated successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Role not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @PostMapping("/{roleId}/permissions")
+    ApiResult<Void> updateRolePermissions(@PathVariable String roleId, @RequestBody @Valid UpdateRolePermissionsRequest updateRolePermissionsRequest) {
+        roleService.updateRolePermissions(roleId, updateRolePermissionsRequest);
+        return ApiResult.<Void>builder()
+                .message("Role permissions updated successfully")
                 .build();
     }
 }
