@@ -105,4 +105,19 @@ public class LessonService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
+    public List<LessonResponse> getLessonsByUnitId(String unitId) {
+        try {
+            return lessonRepository.findAllByUnit_Id(java.util.UUID.fromString(unitId))
+                    .stream()
+                    .map(lessonMapper::toLessonResponse)
+                    .collect(Collectors.toList());
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching lessons by unit id {}: {}", unitId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }

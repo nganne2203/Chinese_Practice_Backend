@@ -100,4 +100,18 @@ public class LessonController {
                 .result(lessonService.getAllLessons())
                 .build();
     }
+
+    @Operation(summary = "Get lessons by unit ID", description = "Retrieve a list of lessons associated with a specific unit ID", tags = {"Lesson"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of lessons retrieved successfully", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = LessonResponse.class))
+            }),
+            @ApiResponse(responseCode = "500", description = "Uncategorized exception", content = @Content)
+    })
+    @GetMapping("/unit/{unitId}")
+    public ApiResult<List<LessonResponse>> getLessonsByUnitId(@PathVariable String unitId) {
+        return ApiResult.<List<LessonResponse>>builder()
+                .result(lessonService.getLessonsByUnitId(unitId))
+                .build();
+    }
 }
