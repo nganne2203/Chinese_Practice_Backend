@@ -144,4 +144,20 @@ public class VocabularyService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
+
+    public List<VocabularyResponse> getVocabulariesByLessonId(String lessonId) {
+        try {
+            UUID lessonUUID = UUID.fromString(lessonId);
+            return vocabularyRepository.findAllByLesson_Id(lessonUUID)
+                    .stream()
+                    .map(vocabularyMapper::toVocabularyResponse)
+                    .toList();
+        } catch (AppException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching vocabularies by lesson id {}: {}", lessonId, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
 }
